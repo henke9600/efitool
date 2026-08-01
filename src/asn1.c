@@ -50,7 +50,7 @@ size_t asn1_read_header(
     if (remaining < 2) return 0;
     unsigned char tag_octet = pos[0];
     int tag_class = tag_octet >> 6;
-    bool constructed = tag_octet & 0x20;
+    bool constructed = (tag_octet & 0x20) != 0;
     int tag_number = tag_octet & 0x1F;
     if (tag_number == 0x1F) return 0; // Don't support high tag number form
 
