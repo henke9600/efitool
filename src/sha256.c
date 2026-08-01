@@ -97,7 +97,7 @@ void sha256_update(struct sha256 *self, unsigned char *in, size_t size) {
 
     self->buffer_size = size & SHA256_BLOCK_MASK;
     if (self->buffer_size > 0) {
-        memcpy(&self->buffer[0], in + (size & ~(size_t)SHA256_BLOCK_MASK), self->buffer_size);
+        memcpy(&self->buffer[0], in + (size - self->buffer_size), self->buffer_size);
     }
 }
 
