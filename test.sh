@@ -241,7 +241,7 @@ echo_eval "cmp \"$signed_signed_efi_hash\" \"$signed_efi_hash\""
 
 hashed2_efi_tosign="$tmp_dir/hashed2.tosign"
 echo_eval "$EFITOOL prepare-pe-signing -o \"$hashed2_efi_tosign\" \"$hashed2_efi_hash\""
-hashed2_efi_sig="$tmp_dir/signed.sig"
+hashed2_efi_sig="$tmp_dir/hashed2.sig"
 echo_eval "$OPENSSL dgst -sha256 -keyform der -sign \"$db_key\" -out \"$hashed2_efi_sig\" \"$hashed2_efi_tosign\""
 echo_eval "$EFITOOL build-signed-pe -o \"$hashed2_efi\" \"$other_cert\" \"$hashed2_efi_sig\" \"$hashed2_efi\""
 signed_hashed2_efi_hash="$tmp_dir/signed_hashed2.pehash"
