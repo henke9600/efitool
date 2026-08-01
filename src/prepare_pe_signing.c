@@ -81,7 +81,7 @@ int prepare_pe_signing_main(char *parent, char **argv) {
 
     if (argparse_opt != '\0') {
         if (argparse_long_opt != NULL) (void)fprintf(stderr, "ERROR: Invalid long option '%s'\n\n", argparse_long_opt);
-        else                  (void)fprintf(stderr, "ERROR: Invalid option '%c'\n\n", argparse_opt);
+        else                           (void)fprintf(stderr, "ERROR: Invalid option '%c'\n\n", argparse_opt);
         goto err_usage;
     }
 
