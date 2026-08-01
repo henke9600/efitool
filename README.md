@@ -108,7 +108,7 @@ $ cmake -Bbuild-dev \
 $ cmake --build build-dev
 ```
 
-After building, you can test the program with `test.sh`. It requires Clang and OpenSSL to run.
+After building, you can test the application with `test.sh`. It requires Clang and OpenSSL to run.
 ```console
 $ EFITOOL=build-dev/efitool ./test.sh
 ```
