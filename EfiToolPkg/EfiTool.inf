@@ -1,0 +1,47 @@
+[Defines]
+  INF_VERSION = 0x00010006
+  BASE_NAME = efitool
+  FILE_GUID = 38abe298-a5e8-47c9-8e08-5a7836c7d3f6
+  MODULE_TYPE = UEFI_APPLICATION
+  VERSION_STRING = 1.0
+  ENTRY_POINT = ShellCEntryLib
+
+[Sources]
+  ../src/efitool.c
+  ../src/build_signature_data.c
+  ../src/build_signature_list.c
+  ../src/build_signature_database.c
+  ../src/build_auth2_data.c
+  ../src/build_dmpstore_data.c
+  ../src/build_dmpstore_list.c
+  ../src/build_efivarfs_data.c
+  ../src/build_signed_pe.c
+  ../src/parse_signature_data.c
+  ../src/parse_signature_list.c
+  ../src/parse_signature_database.c
+  ../src/parse_auth2_data.c
+  ../src/parse_dmpstore_data.c
+  ../src/parse_dmpstore_list.c
+  ../src/parse_efivarfs_data.c
+  ../src/prepare_auth2_signing.c
+  ../src/prepare_pe_signing.c
+  ../src/calculate_pe_hash.c
+  ../src/convert_to_hex.c
+  ../src/convert_from_hex.c
+  ../src/asn1.c
+  ../src/crc32.c
+  ../src/efi.c
+  ../src/file.c
+  ../src/pe.c
+  ../src/sha256.c
+  ../src/util.c
+  ../src/x.c
+
+[Packages]
+  StdLib/StdLib.dec
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  LibC
+  LibStdio
+  DevMedia

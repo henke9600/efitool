@@ -1,0 +1,10 @@
+/.vscode
+/.vs
+/.idea
+/.cache
+/.clangd
+/CMakePresets.json
+/CMakeUserPresets.json
+/tags
+/build*
+/out*
