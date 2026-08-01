@@ -73,7 +73,7 @@ $ cmake --build build
 ### EDK2 Build
 The EDK2 package `EfiToolPkg` can be used to build `efitool` as an EFI Shell application.
 
-This requires the EDK2 build system and EDK2 libc. An example of setting this up is show below.
+This requires the EDK2 build system and EDK2 libc. An example of setting this up is shown below.
 ```console
 $ cd ..
 $ git clone https://github.com/tianocore/edk2.git
@@ -94,7 +94,7 @@ For fun, Open Watcom can be used to build `efitool` for DOS.
 ```
 
 ## Development
-The following CMake flags are recommended for development using gcc or clang.
+The following CMake flags are recommended for development with gcc or clang.
 ```console
 $ cmake -Bbuild-dev \
 -DCMAKE_C_STANDARD=99 \
