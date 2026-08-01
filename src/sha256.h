@@ -10,7 +10,7 @@
 struct sha256 {
     uint_least32_t state[8];
     uint_least32_t block_count0;
-    unsigned block_count1;
+    uint_least32_t block_count1;
     unsigned char buffer[SHA256_BLOCK_SIZE];
     unsigned buffer_size;
 };
