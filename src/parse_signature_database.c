@@ -25,10 +25,13 @@ static int parse_signature_database(char *input_db, char *output_prefix, char *o
         file_init(&out);
         char *out_name = NULL;
 
-        if (off > input_size - EFI_SIGNATURE_LIST_SIZE) goto inner_err_cleanup;
+        if (input_size - off < EFI_SIGNATURE_LIST_SIZE) goto inner_err_cleanup;
         struct efi_signature_list efi_sig_list;
         efi_signature_list_read(&efi_sig_list, input_buffer + off);
-        if (efi_sig_list.signature_list_size < EFI_SIGNATURE_DATA_SIZE) goto inner_err_cleanup;
+        if (
+            efi_sig_list.signature_list_size < EFI_SIGNATURE_LIST_SIZE ||
+            efi_sig_list.signature_list_size > input_size - off
+        ) goto inner_err_cleanup;
 
         if (output_prefix != NULL) {
             int out_name_len = snprintf(NULL, 0, OUT_NAME_FMT, output_prefix, n, output_suffix);
@@ -42,7 +45,6 @@ static int parse_signature_database(char *input_db, char *output_prefix, char *o
             ) < 0) goto inner_err_cleanup;
         }
 
-        if (off > input_size - efi_sig_list.signature_list_size) goto inner_err_cleanup;
         if (file_open(&out, out_name, FILE_MODE_WRITE) < 0) goto inner_err_cleanup;
         if (file_write(&out, input_buffer + off, efi_sig_list.signature_list_size) < 0) goto inner_err_cleanup;
         off += efi_sig_list.signature_list_size;
