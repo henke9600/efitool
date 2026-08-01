@@ -94,7 +94,7 @@ For fun, Open Watcom can be used to build `efitool` for DOS.
 ```
 
 ## Development
-The following CMake flags are recommended for development with gcc or clang.
+The following CMake flags are recommended for development with GCC or Clang.
 ```console
 $ cmake -Bbuild-dev \
 -DCMAKE_C_STANDARD=99 \
