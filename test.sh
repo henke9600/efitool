@@ -9,10 +9,13 @@ echo_eval() {
     printf "%s\n" "$1" && eval "$1"
 }
 
-# UEFI 2.11, 32.4.1
+# UEFI 2.11
+# 3.3)
+global_variable_guid=8be4df61-93ca-11d2-aa0d-00e098032b8c
+# 32.4.1)
 cert_sha256_guid=c1c41626-504c-4092-aca9-41f936934328
 cert_x509_guid=a5c059a1-94e4-4aa7-87b5-ab155c2bf072
-global_variable_guid=8be4df61-93ca-11d2-aa0d-00e098032b8c
+# 32.7.1)
 image_security_database_guid=d719b2cb-3d3a-4596-a3bc-dad00e67656f
 
 sb_attrs="--non-volatile --bootservice-access --runtime-access"
