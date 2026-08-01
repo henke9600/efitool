@@ -27,7 +27,7 @@ static int parse_dmpstore_list(char *input_ds_list, char *output_prefix, char *o
         file_init(&out);
         char *out_name = NULL;
 
-        if (off > input_size - CONSTANT_SIZE) goto inner_err_cleanup;
+        if (input_size - off < CONSTANT_SIZE) goto inner_err_cleanup;
         uint_least32_t var_name_ucs2_size = x_load_u32(input_buffer + off);
         uint_least32_t data_size = x_load_u32(input_buffer + off + 4);
 
