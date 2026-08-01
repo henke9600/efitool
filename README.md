@@ -117,3 +117,8 @@ There's also `Lint.cmake` which runs various checks on the code. It requires CMa
 ```console
 $ cmake -P Lint.cmake
 ```
+
+If you want to use Clangd, it can be configured as shown below.
+```console
+$ printf "CompileFlags:\n  CompilationDatabase: build-dev\n" >.clangd
+```
