@@ -85,14 +85,16 @@ void sha256_update(struct sha256 *self, unsigned char *in, size_t size) {
         self->buffer_size += num_to_read;
         if (self->buffer_size < SHA256_BLOCK_SIZE) return;
         sha256_block(&self->state[0], &self->buffer[0]);
-        if ((++self->block_count0 & 0xFFFFFFFF) == 0) ++self->block_count1;
+        self->block_count0 = (self->block_count0 + 1) & 0xFFFFFFFF;
+        if (self->block_count0 == 0) ++self->block_count1;
         in += num_to_read;
         size -= num_to_read;
     }
     size_t num_blocks = size >> SHA256_BLOCK_SHIFT;
     for (size_t i = 0; i < num_blocks; ++i) {
         sha256_block(&self->state[0], in + i * SHA256_BLOCK_SIZE);
-        if ((++self->block_count0 & 0xFFFFFFFF) == 0) ++self->block_count1;
+        self->block_count0 = (self->block_count0 + 1) & 0xFFFFFFFF;
+        if (self->block_count0 == 0) ++self->block_count1;
     }
 
     self->buffer_size = size & SHA256_BLOCK_MASK;
