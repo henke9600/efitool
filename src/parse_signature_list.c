@@ -25,7 +25,8 @@ static int parse_signature_list(char *input_esl, char *output_prefix, char *outp
     if (
         efi_sig_list.signature_list_size != input_size ||
         efi_sig_list.signature_header_size != 0 ||
-        efi_sig_list.signature_size < EFI_SIGNATURE_DATA_SIZE
+        efi_sig_list.signature_size < EFI_SIGNATURE_DATA_SIZE ||
+        (input_size - EFI_SIGNATURE_LIST_SIZE) % efi_sig_list.signature_size != 0
     ) goto err_cleanup;
 
     size_t off = EFI_SIGNATURE_LIST_SIZE;
@@ -47,7 +48,6 @@ static int parse_signature_list(char *input_esl, char *output_prefix, char *outp
             ) < 0) goto inner_err_cleanup;
         }
 
-        if (off > input_size - efi_sig_list.signature_size) goto inner_err_cleanup;
         if (file_open(&out, out_name, FILE_MODE_WRITE) < 0) goto inner_err_cleanup;
         if (file_write(&out, input_buffer + off, efi_sig_list.signature_size) < 0) goto inner_err_cleanup;
         off += efi_sig_list.signature_size;
