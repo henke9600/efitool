@@ -1,5 +1,5 @@
-#ifndef BUILD_X509_SIGNATURE_LIST_H
-#define BUILD_X509_SIGNATURE_LIST_H
+#ifndef BUILD_SIGNATURE_LIST_H
+#define BUILD_SIGNATURE_LIST_H
 
 int build_signature_list_main(char *parent, int argc, char **argv);
 
