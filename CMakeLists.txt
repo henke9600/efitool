@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 project(efitool C)
 
+include(CTest)
 include(GNUInstallDirs)
 
 add_executable(efitool
@@ -35,6 +36,17 @@ add_executable(efitool
     src/util.c
     src/x.c
 )
+
+if(BUILD_TESTING)
+    function(add_unit_test name)
+        add_executable(test_${name} tests/test_${name}.c)
+        target_include_directories(test_${name} PRIVATE src)
+        add_test(NAME ${name} COMMAND test_${name})
+    endfunction()
+
+    add_unit_test(x)
+    add_unit_test(sha256)
+endif()
 
 install(
     TARGETS efitool

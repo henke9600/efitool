@@ -1,5 +1,5 @@
 # EFI Tool
-The `efitool` application is a CLI for building and parsing various EFI data structures. It's written in portable C99 with no dependencies.
+`efitool` is an application for building and parsing various EFI data structures. It's written in portable C99 with no dependencies.
 
 Here are some examples of what it can do:
 * Build PK, KEK and db signature databases consisting of X509 certificates or PE hashes
@@ -66,8 +66,10 @@ $ cc -o efitool src/*.c
 
 ### CMake Build
 ```console
-$ cmake -Bbuild -DCMAKE_BUILD_TYPE=Release
+$ cmake -Bbuild -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release
 $ cmake --build build
+$ # Optionally install the application
+$ cmake --install build --prefix ~/.local
 ```
 
 ### EDK2 Build
@@ -105,10 +107,14 @@ $ cmake -Bbuild-dev \
 " \
 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
 -DCMAKE_BUILD_TYPE=Debug
-$ cmake --build build-dev
 ```
 
-After building, you can test the application with `test.sh`. It requires Clang and OpenSSL to run.
+You can then build the application and run the unit tests.
+```console
+$ cmake --build build-dev && ctest --test-dir build-dev --output-on-failure
+```
+
+You can also test the application end to end with `test.sh`. It requires Clang and OpenSSL to run.
 ```console
 $ EFITOOL=build-dev/efitool ./test.sh
 ```

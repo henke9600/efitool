@@ -15,7 +15,7 @@ string(CONCAT C_WARNINGS
 )
 string(CONCAT CLANG_TIDY_CHECKS
     "clang-analyzer-*,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,"
-    "bugprone-*,-bugprone-easily-swappable-parameters,"
+    "bugprone-*,-bugprone-easily-swappable-parameters,-bugprone-suspicious-include,"
     "performance-*,"
     "portability-*,"
     "cert-*,"
@@ -46,6 +46,14 @@ function(lint BUILD_TYPE)
     )
     if(NOT result EQUAL 0)
         message(FATAL_ERROR "CMake ${BUILD_TYPE} build failed")
+    endif()
+
+    execute_process(
+        COMMAND ${CMAKE_CTEST_COMMAND} --test-dir ${BUILD_DIR} --output-on-failure
+        RESULT_VARIABLE result
+    )
+    if(NOT result EQUAL 0)
+        message(FATAL_ERROR "Unit tests ${BUILD_TYPE} failed")
     endif()
 
     execute_process(
@@ -115,7 +123,7 @@ function(check_textfile FILE)
     endif()
 endfunction()
 
-file(GLOB_RECURSE TEXT_FILES "${SOURCE_DIR}/src/*" "${SOURCE_DIR}/EfiToolPkg/*")
+file(GLOB_RECURSE TEXT_FILES "${SOURCE_DIR}/src/*" "${SOURCE_DIR}/EfiToolPkg/*" "${SOURCE_DIR}/tests/*")
 list(APPEND TEXT_FILES
     "${SOURCE_DIR}/LICENSE"
     "${SOURCE_DIR}/CMakeLists.txt"
