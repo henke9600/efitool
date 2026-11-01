@@ -12,12 +12,12 @@
 #include <string.h>
 
 static int prepare_auth2_signing(
-    unsigned char *var_name_ucs2, size_t var_name_ucs2_size,
-    struct efi_guid *vendor_guid,
+    const unsigned char *var_name_ucs2, size_t var_name_ucs2_size,
+    const struct efi_guid *vendor_guid,
     uint_least32_t attributes,
-    struct efi_time *timestamp,
-    char *input_var_data,
-    char *output_to_be_signed
+    const struct efi_time *timestamp,
+    const char *input_var_data,
+    const char *output_to_be_signed
 ) {
     int status = -1;
     unsigned char *input_buffer = NULL;
@@ -57,7 +57,7 @@ static int prepare_auth2_signing(
 
 #define TIMESTAMP_DEFAULT "1970-01-01 00:00:00"
 #define TIMESTAMP_INFO "formatted as \"%%Y-%%m-%%d %%H:%%M:%%S\". Defaults to \""
-static int prepare_auth2_signing_usage(FILE *file, char *parent, char **argv) {
+static int prepare_auth2_signing_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... VARIABLE_NAME VENDOR_GUID VARIABLE_DATA\n"
@@ -76,9 +76,9 @@ static int prepare_auth2_signing_usage(FILE *file, char *parent, char **argv) {
 }
 #undef TIMESTAMP_INFO
 
-int prepare_auth2_signing_main(char *parent, char **argv) {
+int prepare_auth2_signing_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_file = "-";
+    const char *output_file = "-";
     uint_least32_t attributes = EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS;
     struct efi_time timestamp;
     util_parse_timestamp(&timestamp, TIMESTAMP_DEFAULT);
@@ -132,19 +132,19 @@ int prepare_auth2_signing_main(char *parent, char **argv) {
         return prepare_auth2_signing_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *variable_name = argv[argparse_pos++];
+    const char *variable_name = argv[argparse_pos++];
     if (variable_name == NULL) {
         (void)fprintf(stderr, "ERROR: Missing VARIABLE_NAME\n\n");
         goto err_usage;
     }
 
-    char *vendor_guid = argv[argparse_pos++];
+    const char *vendor_guid = argv[argparse_pos++];
     if (vendor_guid == NULL) {
         (void)fprintf(stderr, "ERROR: Missing VENDOR_GUID\n\n");
         goto err_usage;
     }
 
-    char *variable_data = argv[argparse_pos++];
+    const char *variable_data = argv[argparse_pos++];
     if (variable_data == NULL) {
         (void)fprintf(stderr, "ERROR: Missing VARIABLE_DATA\n\n");
         goto err_usage;

@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-static int usage(FILE *file, char **argv) {
+static int usage(FILE *file, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s [OPTION]... COMMAND\n"
@@ -63,9 +63,10 @@ static int usage(FILE *file, char **argv) {
     );
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv_mutable) {
     if (argc < 1) return EXIT_FAILURE;
 
+    const char *const *argv = (const char *const *)argv_mutable;
     bool help = false;
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0) { argparse_arg = "h"; break; }
@@ -88,8 +89,8 @@ int main(int argc, char **argv) {
     }
 
     int cmd_argc = argc - argparse_pos;
-    char **cmd_argv = argv + argparse_pos;
-    char *cmd = cmd_argv[0];
+    const char *const *cmd_argv = argv + argparse_pos;
+    const char *cmd = cmd_argv[0];
     if (cmd == NULL) {
         (void)fprintf(stderr, "ERROR: Missing COMMAND\n\n");
         goto err_usage;

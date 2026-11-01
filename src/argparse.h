@@ -1,9 +1,9 @@
 #define ARGPARSE_BEGIN(ARGV) \
     int argparse_pos = 1; \
     char argparse_opt = '\0'; \
-    char *argparse_long_opt = NULL; \
+    const char *argparse_long_opt = NULL; \
     for (;; ++argparse_pos) { \
-        char *argparse_arg = (ARGV)[argparse_pos]; \
+        const char *argparse_arg = (ARGV)[argparse_pos]; \
         if (argparse_arg == NULL) { \
             if (argparse_opt != '\0') --argparse_pos; \
             goto argparse_done; \

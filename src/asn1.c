@@ -6,6 +6,18 @@
 #include <assert.h>
 #include <stdint.h>
 
+// "<<<Obsolete>>>"
+static const unsigned char asn1_obsolete[] = { 0x3C, 0x3C, 0x3C, 0x4F, 0x62, 0x73, 0x6F, 0x6C, 0x65, 0x74, 0x65, 0x3E, 0x3E, 0x3E };
+
+static const uint_least32_t asn1_pkcs1_rsa_encryption_obj[] = { 1 * 40 + 2, 840, 113549, 1, 1, 1 };
+const uint_least32_t asn1_pkcs7_data_obj[] = { 1 * 40 + 2, 840, 113549, 1, 7, 1 };
+static const uint_least32_t asn1_pkcs7_signed_data_obj[] = { 1 * 40 + 2, 840, 113549, 1, 7, 2 };
+static const uint_least32_t asn1_pkcs9_content_type_obj[] = { 1 * 40 + 2, 840, 113549, 1, 9, 3 };
+static const uint_least32_t asn1_pkcs9_message_digest_obj[] = { 1 * 40 + 2, 840, 113549, 1, 9, 4 };
+const uint_least32_t asn1_spc_indirect_data_obj[] = { 1 * 40 + 3, 6, 1, 4, 1, 311, 2, 1, 4 };
+static const uint_least32_t asn1_spc_pe_image_data_obj[] = { 1 * 40 + 3, 6, 1, 4, 1, 311, 2, 1, 15 };
+static const uint_least32_t asn1_sha256_obj[] = { 2 * 40 + 16, 840, 1, 101, 3, 4, 2, 1 };
+
 static size_t asn1_length_octets(size_t payload_size) {
     if (payload_size < 128) return 1;
     size_t n = 1;
@@ -40,11 +52,11 @@ size_t asn1_write_header(int tag_class, int tag_number, bool constructed, size_t
 }
 
 size_t asn1_read_header(
-    unsigned char *in, size_t in_off, size_t in_size,
+    const unsigned char *in, size_t in_off, size_t in_size,
     int *out_tag_class, int *out_tag_number, bool *out_constructed,
     size_t *out_payload_size
 ) {
-    unsigned char *pos = in + in_off;
+    const unsigned char *pos = in + in_off;
     size_t remaining = in_size - in_off;
 
     if (remaining < 2) return 0;
@@ -124,7 +136,7 @@ static size_t asn1_object_identifier_component_size(uint_least32_t component) {
     return n;
 }
 
-size_t asn1_object_identifier_write(uint_least32_t *components, size_t component_count, unsigned char *out) {
+size_t asn1_object_identifier_write(const uint_least32_t *components, size_t component_count, unsigned char *out) {
     size_t payload_size = 0;
     for (size_t i = 0; i < component_count; ++i) {
         payload_size += asn1_object_identifier_component_size(components[i]);
@@ -149,32 +161,27 @@ size_t asn1_object_identifier_write(uint_least32_t *components, size_t component
     return header_size + payload_size;
 }
 
-size_t asn1_authenticode_spcidc_write(struct asn1_authenticode_spcidc_ctx *ctx, unsigned char *sha256_hash, unsigned char *out) {
-    uint_least32_t spc_pe_image_data_obj[] = { 1 * 40 + 3, 6, 1, 4, 1, 311, 2, 1, 15 };
-    // "<<<Obsolete>>>"
-    unsigned char obsolete[] = { 0x3C, 0x3C, 0x3C, 0x4F, 0x62, 0x73, 0x6F, 0x6C, 0x65, 0x74, 0x65, 0x3E, 0x3E, 0x3E };
-    uint_least32_t sha256_obj[] = { 2 * 40 + 16, 840, 1, 101, 3, 4, 2, 1 };
-
+size_t asn1_authenticode_spcidc_write(struct asn1_authenticode_spcidc_ctx *ctx, const unsigned char *sha256_hash, unsigned char *out) {
     if (out != NULL) {
         size_t off = 0;
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->payload_size, out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->data.payload_size, out + off);
         off += asn1_object_identifier_write(
-            &spc_pe_image_data_obj[0],
-            x_ARRAY_LEN(spc_pe_image_data_obj),
+            &asn1_spc_pe_image_data_obj[0],
+            x_ARRAY_LEN(asn1_spc_pe_image_data_obj),
             out + off
         );
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->data.value.payload_size, out + off);
         off += asn1_write_header(ASN1_CONTEXT_SPECIFIC, 0, true, ctx->data.value.file.payload_size, out + off);
         off += asn1_write_header(ASN1_CONTEXT_SPECIFIC, 2, true, ctx->data.value.file.file.payload_size, out + off);
-        off += asn1_write_header(ASN1_CONTEXT_SPECIFIC, 0, false, sizeof(obsolete) * 2, out + off);
-        for (size_t i = 0; i < sizeof(obsolete); ++i) {
+        off += asn1_write_header(ASN1_CONTEXT_SPECIFIC, 0, false, sizeof(asn1_obsolete) * 2, out + off);
+        for (size_t i = 0; i < sizeof(asn1_obsolete); ++i) {
             out[off++] = 0;
-            out[off++] = obsolete[i];
+            out[off++] = asn1_obsolete[i];
         }
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->message_digest.payload_size, out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->message_digest.digest_algorithm.payload_size, out + off);
-        off += asn1_object_identifier_write(&sha256_obj[0], x_ARRAY_LEN(sha256_obj), out + off);
+        off += asn1_object_identifier_write(&asn1_sha256_obj[0], x_ARRAY_LEN(asn1_sha256_obj), out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_NULL, false, 0, out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_OCTET_STRING, false, SHA256_HASH_SIZE, out + off);
         memcpy(out + off, sha256_hash, SHA256_HASH_SIZE);
@@ -185,34 +192,35 @@ size_t asn1_authenticode_spcidc_write(struct asn1_authenticode_spcidc_ctx *ctx, 
     }
 
     ctx->message_digest.digest_algorithm.payload_size = (
-        asn1_object_identifier_write(&sha256_obj[0], x_ARRAY_LEN(sha256_obj), NULL) +
+        asn1_object_identifier_write(&asn1_sha256_obj[0], x_ARRAY_LEN(asn1_sha256_obj), NULL) +
         asn1_size(0) // NULL
     );
     ctx->message_digest.payload_size = asn1_size(ctx->message_digest.digest_algorithm.payload_size) + asn1_size(SHA256_HASH_SIZE);
-    ctx->data.value.file.file.payload_size = asn1_size(sizeof(obsolete) * 2);
+    ctx->data.value.file.file.payload_size = asn1_size(sizeof(asn1_obsolete) * 2);
     ctx->data.value.file.payload_size = asn1_size(ctx->data.value.file.file.payload_size);
     ctx->data.value.payload_size = asn1_size(ctx->data.value.file.payload_size);
     ctx->data.payload_size = (
-        asn1_object_identifier_write(&spc_pe_image_data_obj[0], x_ARRAY_LEN(spc_pe_image_data_obj), NULL) +
+        asn1_object_identifier_write(&asn1_spc_pe_image_data_obj[0], x_ARRAY_LEN(asn1_spc_pe_image_data_obj), NULL) +
         asn1_size(ctx->data.value.payload_size)
     );
     ctx->payload_size = asn1_size(ctx->data.payload_size) + asn1_size(ctx->message_digest.payload_size);
     return asn1_size(ctx->payload_size);
 }
 
-size_t asn1_authenticode_auth_attrs_write(struct asn1_authenticode_auth_attrs_ctx *ctx, unsigned char *sha256_hash, unsigned char *out) {
-    uint_least32_t content_type_obj[] = { 1 * 40 + 2, 840, 113549, 1, 9, 3 };
-    uint_least32_t message_digest_obj[] = { 1 * 40 + 2, 840, 113549, 1, 9, 4 };
-    uint_least32_t spc_indirect_data_obj[] = { 1 * 40 + 3, 6, 1, 4, 1, 311, 2, 1, 4 };
+size_t asn1_authenticode_auth_attrs_write(
+    struct asn1_authenticode_auth_attrs_ctx *ctx,
+    const unsigned char *sha256_hash,
+    unsigned char *out
+) {
     if (out != NULL) {
         size_t off = 0;
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SET, true, ctx->payload_size, out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->content_type.payload_size, out + off);
-        off += asn1_object_identifier_write(&content_type_obj[0], x_ARRAY_LEN(content_type_obj), out + off);
+        off += asn1_object_identifier_write(&asn1_pkcs9_content_type_obj[0], x_ARRAY_LEN(asn1_pkcs9_content_type_obj), out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SET, true, ctx->content_type.value.payload_size, out + off);
-        off += asn1_object_identifier_write(&spc_indirect_data_obj[0], x_ARRAY_LEN(spc_indirect_data_obj), out + off);
+        off += asn1_object_identifier_write(&asn1_spc_indirect_data_obj[0], x_ARRAY_LEN(asn1_spc_indirect_data_obj), out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->message_digest.payload_size, out + off);
-        off += asn1_object_identifier_write(&message_digest_obj[0], x_ARRAY_LEN(message_digest_obj), out + off);
+        off += asn1_object_identifier_write(&asn1_pkcs9_message_digest_obj[0], x_ARRAY_LEN(asn1_pkcs9_message_digest_obj), out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SET, true, ctx->message_digest.value.payload_size, out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_OCTET_STRING, false, SHA256_HASH_SIZE, out + off);
         memcpy(out + off, sha256_hash, SHA256_HASH_SIZE);
@@ -224,16 +232,16 @@ size_t asn1_authenticode_auth_attrs_write(struct asn1_authenticode_auth_attrs_ct
 
     ctx->message_digest.value.payload_size = asn1_size(SHA256_HASH_SIZE);
     ctx->message_digest.payload_size = (
-        asn1_object_identifier_write(&message_digest_obj[0], x_ARRAY_LEN(message_digest_obj), NULL) +
+        asn1_object_identifier_write(&asn1_pkcs9_message_digest_obj[0], x_ARRAY_LEN(asn1_pkcs9_message_digest_obj), NULL) +
         asn1_size(ctx->message_digest.value.payload_size)
     );
     ctx->content_type.value.payload_size = asn1_object_identifier_write(
-        &spc_indirect_data_obj[0],
-        x_ARRAY_LEN(spc_indirect_data_obj),
+        &asn1_spc_indirect_data_obj[0],
+        x_ARRAY_LEN(asn1_spc_indirect_data_obj),
         NULL
     );
     ctx->content_type.payload_size = (
-        asn1_object_identifier_write(&content_type_obj[0], x_ARRAY_LEN(content_type_obj), NULL) +
+        asn1_object_identifier_write(&asn1_pkcs9_content_type_obj[0], x_ARRAY_LEN(asn1_pkcs9_content_type_obj), NULL) +
         asn1_size(ctx->content_type.value.payload_size)
     );
     ctx->payload_size = asn1_size(ctx->content_type.payload_size) + asn1_size(ctx->message_digest.payload_size);
@@ -242,37 +250,34 @@ size_t asn1_authenticode_auth_attrs_write(struct asn1_authenticode_auth_attrs_ct
 
 size_t asn1_pkcs7_signed_data_content_info_write(
     struct asn1_pkcs7_signed_data_content_info_ctx *ctx,
-    uint_least32_t *content_obj,
+    const uint_least32_t *content_obj,
     size_t content_obj_len,
-    unsigned char *content, // May be NULL
+    const unsigned char *content, // May be NULL
     size_t content_size,
-    unsigned char *x509,
+    const unsigned char *x509,
     size_t x509_size,
-    unsigned char *issuer,
+    const unsigned char *issuer,
     size_t issuer_size,
-    unsigned char *serial_number,
+    const unsigned char *serial_number,
     size_t serial_number_size,
-    unsigned char *auth_attrs_payload, // May be NULL
+    const unsigned char *auth_attrs_payload, // May be NULL
     size_t auth_attrs_payload_size,
-    unsigned char *encrypted_digest,
+    const unsigned char *encrypted_digest,
     size_t encrypted_digest_size,
     unsigned char *out
 ) {
-    uint_least32_t signed_data_obj[] = { 1 * 40 + 2, 840, 113549, 1, 7, 2 };
-    uint_least32_t sha256_obj[] = { 2 * 40 + 16, 840, 1, 101, 3, 4, 2, 1 };
-    uint_least32_t rsa_encryption_oid[] = { 1 * 40 + 2, 840, 113549, 1, 1, 1 };
     int_least32_t signed_data_version = 1;
     int_least32_t signer_info_version = 1;
     if (out != NULL) {
         size_t off = 0;
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->payload_size, out + off);
-        off += asn1_object_identifier_write(&signed_data_obj[0], x_ARRAY_LEN(signed_data_obj), out + off);
+        off += asn1_object_identifier_write(&asn1_pkcs7_signed_data_obj[0], x_ARRAY_LEN(asn1_pkcs7_signed_data_obj), out + off);
         off += asn1_write_header(ASN1_CONTEXT_SPECIFIC, 0, true, ctx->content.payload_size, out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->content._0.payload_size, out + off);
         off += asn1_integer_write(signed_data_version, out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SET, true, ctx->content._0.digest_algorithms.payload_size, out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->content._0.digest_algorithms.sha256.payload_size, out + off);
-        off += asn1_object_identifier_write(&sha256_obj[0], x_ARRAY_LEN(sha256_obj), out + off);
+        off += asn1_object_identifier_write(&asn1_sha256_obj[0], x_ARRAY_LEN(asn1_sha256_obj), out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_NULL, false, 0, out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->content._0.content_info.payload_size, out + off);
         off += asn1_object_identifier_write(content_obj, content_obj_len, out + off);
@@ -297,7 +302,7 @@ size_t asn1_pkcs7_signed_data_content_info_write(
             ctx->content._0.signer_infos.signer_info.digest_algorithm.payload_size,
             out + off
         );
-        off += asn1_object_identifier_write(&sha256_obj[0], x_ARRAY_LEN(sha256_obj), out + off);
+        off += asn1_object_identifier_write(&asn1_sha256_obj[0], x_ARRAY_LEN(asn1_sha256_obj), out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_NULL, false, 0, out + off);
         if (auth_attrs_payload != NULL) {
             off += asn1_write_header(ASN1_CONTEXT_SPECIFIC, 0, true, auth_attrs_payload_size, out + off);
@@ -309,7 +314,7 @@ size_t asn1_pkcs7_signed_data_content_info_write(
             ctx->content._0.signer_infos.signer_info.digest_encryption_algorithm.payload_size,
             out + off
         );
-        off += asn1_object_identifier_write(&rsa_encryption_oid[0], x_ARRAY_LEN(rsa_encryption_oid), out + off);
+        off += asn1_object_identifier_write(&asn1_pkcs1_rsa_encryption_obj[0], x_ARRAY_LEN(asn1_pkcs1_rsa_encryption_obj), out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_NULL, false, 0, out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_OCTET_STRING, false, encrypted_digest_size, out + off);
         memcpy(out + off, encrypted_digest, encrypted_digest_size);
@@ -320,11 +325,11 @@ size_t asn1_pkcs7_signed_data_content_info_write(
     }
 
     ctx->content._0.signer_infos.signer_info.digest_encryption_algorithm.payload_size = (
-        asn1_object_identifier_write(&rsa_encryption_oid[0], x_ARRAY_LEN(rsa_encryption_oid), NULL) +
+        asn1_object_identifier_write(&asn1_pkcs1_rsa_encryption_obj[0], x_ARRAY_LEN(asn1_pkcs1_rsa_encryption_obj), NULL) +
         asn1_size(0)
     );
     ctx->content._0.signer_infos.signer_info.digest_algorithm.payload_size = (
-        asn1_object_identifier_write(&sha256_obj[0], x_ARRAY_LEN(sha256_obj), NULL) +
+        asn1_object_identifier_write(&asn1_sha256_obj[0], x_ARRAY_LEN(asn1_sha256_obj), NULL) +
         asn1_size(0)
     );
     ctx->content._0.signer_infos.signer_info.payload_size = (
@@ -339,7 +344,7 @@ size_t asn1_pkcs7_signed_data_content_info_write(
     ctx->content._0.content_info.payload_size = asn1_object_identifier_write(content_obj, content_obj_len, NULL);
     if (content != NULL) ctx->content._0.content_info.payload_size += asn1_size(content_size);
     ctx->content._0.digest_algorithms.sha256.payload_size = (
-        asn1_object_identifier_write(&sha256_obj[0], x_ARRAY_LEN(sha256_obj), NULL) +
+        asn1_object_identifier_write(&asn1_sha256_obj[0], x_ARRAY_LEN(asn1_sha256_obj), NULL) +
         asn1_size(0)
     );
     ctx->content._0.digest_algorithms.payload_size = asn1_size(ctx->content._0.digest_algorithms.sha256.payload_size);
@@ -352,18 +357,18 @@ size_t asn1_pkcs7_signed_data_content_info_write(
     );
     ctx->content.payload_size = asn1_size(ctx->content._0.payload_size);
     ctx->payload_size = (
-        asn1_object_identifier_write(&signed_data_obj[0], x_ARRAY_LEN(signed_data_obj), NULL) +
+        asn1_object_identifier_write(&asn1_pkcs7_signed_data_obj[0], x_ARRAY_LEN(asn1_pkcs7_signed_data_obj), NULL) +
         asn1_size(ctx->content.payload_size)
     );
     return asn1_size(ctx->payload_size);
 }
 
 int asn1_parse_pkcs7_signed_data_content_info(
-    unsigned char *in,
+    const unsigned char *in,
     size_t in_size,
-    unsigned char **out_x509,
+    const unsigned char **out_x509,
     size_t *out_x509_size,
-    unsigned char **out_encrypted_digest,
+    const unsigned char **out_encrypted_digest,
     size_t *out_encrypted_digest_size
 ) {
     int class;
@@ -414,7 +419,7 @@ int asn1_parse_pkcs7_signed_data_content_info(
     header_size = asn1_read_header(in, off, content_0_payload_end, &class, &tag, &constructed, &payload_size);
     if (header_size == 0 || class != ASN1_CONTEXT_SPECIFIC || tag != 0 || constructed != true) return -1;
     off += header_size;
-    unsigned char *x509 = in + off;
+    const unsigned char *x509 = in + off;
     size_t x509_size = payload_size;
     off += payload_size;
 
@@ -464,11 +469,11 @@ int asn1_parse_pkcs7_signed_data_content_info(
 }
 
 int asn1_parse_x509(
-    unsigned char *in,
+    const unsigned char *in,
     size_t in_size,
-    unsigned char **out_serial_number,
+    const unsigned char **out_serial_number,
     size_t *out_serial_number_size,
-    unsigned char **out_issuer,
+    const unsigned char **out_issuer,
     size_t *out_issuer_size
 ) {
     int class;
@@ -499,7 +504,7 @@ int asn1_parse_x509(
         header_size = asn1_read_header(in, off, tbs_certificate_end, &class, &tag, &constructed, &payload_size);
     }
     if (header_size == 0 || class != ASN1_UNIVERSAL || tag != ASN1_INTEGER || constructed != false) return -1;
-    unsigned char *serial_number = in + off;
+    const unsigned char *serial_number = in + off;
     size_t serial_number_size = header_size + payload_size;
     off += serial_number_size;
 

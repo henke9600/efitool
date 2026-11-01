@@ -13,11 +13,11 @@
 #include <string.h>
 
 static int build_dmpstore_data(
-    unsigned char *var_name_ucs2, size_t var_name_ucs2_size,
-    struct efi_guid *vendor_guid,
+    const unsigned char *var_name_ucs2, size_t var_name_ucs2_size,
+    const struct efi_guid *vendor_guid,
     uint_least32_t attributes,
-    char *input_var_data,
-    char *output_dmpstore_data
+    const char *input_var_data,
+    const char *output_dmpstore_data
 ) {
     int status = -1;
     unsigned char *input_buffer = NULL;
@@ -76,7 +76,7 @@ static int build_dmpstore_data(
     return status;
 }
 
-static int build_dmpstore_data_usage(FILE *file, char *parent, char **argv) {
+static int build_dmpstore_data_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... VARIABLE_NAME VENDOR_GUID VARIABLE_DATA\n"
@@ -94,9 +94,9 @@ static int build_dmpstore_data_usage(FILE *file, char *parent, char **argv) {
     );
 }
 
-int build_dmpstore_data_main(char *parent, char **argv) {
+int build_dmpstore_data_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_file = "-";
+    const char *output_file = "-";
     uint_least32_t attributes = 0;
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)                   { argparse_arg = "h"; break; }
@@ -148,19 +148,19 @@ int build_dmpstore_data_main(char *parent, char **argv) {
         return build_dmpstore_data_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *variable_name = argv[argparse_pos++];
+    const char *variable_name = argv[argparse_pos++];
     if (variable_name == NULL) {
         (void)fprintf(stderr, "ERROR: Missing VARIABLE_NAME\n\n");
         goto err_usage;
     }
 
-    char *vendor_guid = argv[argparse_pos++];
+    const char *vendor_guid = argv[argparse_pos++];
     if (vendor_guid == NULL) {
         (void)fprintf(stderr, "ERROR: Missing VENDOR_GUID\n\n");
         goto err_usage;
     }
 
-    char *variable_data = argv[argparse_pos++];
+    const char *variable_data = argv[argparse_pos++];
     if (variable_data == NULL) {
         (void)fprintf(stderr, "ERROR: Missing VARIABLE_DATA\n\n");
         goto err_usage;

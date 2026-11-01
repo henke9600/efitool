@@ -13,10 +13,10 @@
 #include <string.h>
 
 static int parse_auth2_data(
-    char *input_auth2_data,
-    char *output_var_data,
-    char *output_x509,
-    char *output_sig
+    const char *input_auth2_data,
+    const char *output_var_data,
+    const char *output_x509,
+    const char *output_sig
 ) {
     int status = -1;
     unsigned char *input_buffer = NULL;
@@ -51,12 +51,12 @@ static int parse_auth2_data(
         ) ||
         auth2.auth_info.hdr.revision != 0x0200 ||
         auth2.auth_info.hdr.certificate_type != WIN_CERT_TYPE_EFI_GUID ||
-        !efi_guid_equals(&auth2.auth_info.cert_type, (struct efi_guid *)&efi_cert_type_pkcs7_guid)
+        !efi_guid_equals(&auth2.auth_info.cert_type, &efi_cert_type_pkcs7_guid)
     ) goto err_cleanup;
 
-    unsigned char *x509;
+    const unsigned char *x509;
     size_t x509_size;
-    unsigned char *signature;
+    const unsigned char *signature;
     size_t signature_size;
     size_t content_info_off = EFI_VARIABLE_AUTHENTICATION_2_SIZE;
     size_t content_info_size = auth2.auth_info.hdr.length - WIN_CERTIFICATE_UEFI_GUID_SIZE;
@@ -90,7 +90,7 @@ static int parse_auth2_data(
     return status;
 }
 
-static int parse_auth2_data_usage(FILE *file, char *parent, char **argv) {
+static int parse_auth2_data_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... AUTH2_DATA\n"
@@ -105,11 +105,11 @@ static int parse_auth2_data_usage(FILE *file, char *parent, char **argv) {
     );
 }
 
-int parse_auth2_data_main(char *parent, char **argv) {
+int parse_auth2_data_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_file = NULL;
-    char *output_file_cert = NULL;
-    char *output_file_sig = NULL;
+    const char *output_file = NULL;
+    const char *output_file_cert = NULL;
+    const char *output_file_sig = NULL;
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)               { argparse_arg = "h"; break; }
         if (strcmp(argparse_long_opt, "output") == 0)             { argparse_arg = "o"; break; }
@@ -148,7 +148,7 @@ int parse_auth2_data_main(char *parent, char **argv) {
         return parse_auth2_data_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *auth2_data = argv[argparse_pos++];
+    const char *auth2_data = argv[argparse_pos++];
     if (auth2_data == NULL) {
         (void)fprintf(stderr, "ERROR: Missing AUTH2_DATA\n\n");
         goto err_usage;

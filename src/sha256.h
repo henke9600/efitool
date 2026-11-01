@@ -16,7 +16,7 @@ struct sha256 {
 };
 
 void sha256_init(struct sha256 *self);
-void sha256_update(struct sha256 *self, unsigned char *in, size_t size);
-void sha256_finish(struct sha256 *self, unsigned char *hash);
+void sha256_update(struct sha256 *self, const unsigned char *in, size_t size);
+void sha256_finish(struct sha256 *self, unsigned char *out_hash);
 
 #endif

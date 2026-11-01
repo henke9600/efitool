@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static int build_signature_data(struct efi_guid *owner, char *input, char *output_sig_data) {
+static int build_signature_data(const struct efi_guid *owner, const char *input, const char *output_sig_data) {
     int status = -1;
     unsigned char *input_buffer = NULL;
     struct file out;
@@ -40,7 +40,7 @@ static int build_signature_data(struct efi_guid *owner, char *input, char *outpu
     return status;
 }
 
-static int build_signature_data_usage(FILE *file, char *parent, char **argv) {
+static int build_signature_data_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... OWNER_GUID DATA\n"
@@ -53,9 +53,9 @@ static int build_signature_data_usage(FILE *file, char *parent, char **argv) {
     );
 }
 
-int build_signature_data_main(char *parent, char **argv) {
+int build_signature_data_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_file = "-";
+    const char *output_file = "-";
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)   { argparse_arg = "h"; break; }
         if (strcmp(argparse_long_opt, "output") == 0) { argparse_arg = "o"; break; }
@@ -81,13 +81,13 @@ int build_signature_data_main(char *parent, char **argv) {
         return build_signature_data_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *owner_guid = argv[argparse_pos++];
+    const char *owner_guid = argv[argparse_pos++];
     if (owner_guid == NULL) {
         (void)fprintf(stderr, "ERROR: Missing OWNER_GUID\n\n");
         goto err_usage;
     }
 
-    char *data = argv[argparse_pos++];
+    const char *data = argv[argparse_pos++];
     if (data == NULL) {
         (void)fprintf(stderr, "ERROR: Missing DATA\n\n");
         goto err_usage;

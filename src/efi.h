@@ -14,9 +14,9 @@ struct efi_guid {
     unsigned data3;
     unsigned char data4[8];
 };
-void efi_guid_read(struct efi_guid *self, unsigned char *in);
-void efi_guid_write(struct efi_guid *self, unsigned char *out);
-bool efi_guid_equals(struct efi_guid *self, struct efi_guid *other);
+void efi_guid_read(struct efi_guid *self, const unsigned char *in);
+void efi_guid_write(const struct efi_guid *self, unsigned char *out);
+bool efi_guid_equals(const struct efi_guid *self, const struct efi_guid *other);
 
 // 8.2.1
 #define EFI_VARIABLE_NON_VOLATILE 0x00000001
@@ -36,8 +36,8 @@ struct win_certificate {
     unsigned certificate_type;
     // unsigned char certificate[];
 };
-void win_certificate_read(struct win_certificate *self, unsigned char *in);
-void win_certificate_write(struct win_certificate *self, unsigned char *out);
+void win_certificate_read(struct win_certificate *self, const unsigned char *in);
+void win_certificate_write(const struct win_certificate *self, unsigned char *out);
 
 // 32.2.4.3
 extern const struct efi_guid efi_cert_type_pkcs7_guid;
@@ -48,8 +48,8 @@ struct win_certificate_uefi_guid {
     struct efi_guid cert_type;
     // unsigned char cert_data[];
 };
-void win_certificate_uefi_guid_read(struct win_certificate_uefi_guid *self, unsigned char *in);
-void win_certificate_uefi_guid_write(struct win_certificate_uefi_guid *self, unsigned char *out);
+void win_certificate_uefi_guid_read(struct win_certificate_uefi_guid *self, const unsigned char *in);
+void win_certificate_uefi_guid_write(const struct win_certificate_uefi_guid *self, unsigned char *out);
 
 // 8.3.1
 #define EFI_TIME_ADJUST_DAYLIGHT 0x01
@@ -70,8 +70,8 @@ struct efi_time {
     unsigned char daylight;
     unsigned char pad2;
 };
-void efi_time_read(struct efi_time *self, unsigned char *in);
-void efi_time_write(struct efi_time *self, unsigned char *out);
+void efi_time_read(struct efi_time *self, const unsigned char *in);
+void efi_time_write(const struct efi_time *self, unsigned char *out);
 
 // 8.2.3
 #define EFI_VARIABLE_AUTHENTICATION_2_SIZE (EFI_TIME_SIZE + WIN_CERTIFICATE_UEFI_GUID_SIZE)
@@ -79,8 +79,8 @@ struct efi_variable_authentication_2 {
     struct efi_time timestamp;
     struct win_certificate_uefi_guid auth_info;
 };
-void efi_variable_authentication_2_read(struct efi_variable_authentication_2 *self, unsigned char *in);
-void efi_variable_authentication_2_write(struct efi_variable_authentication_2 *self, unsigned char *out);
+void efi_variable_authentication_2_read(struct efi_variable_authentication_2 *self, const unsigned char *in);
+void efi_variable_authentication_2_write(const struct efi_variable_authentication_2 *self, unsigned char *out);
 
 // 32.4.1
 #define EFI_SIGNATURE_DATA_SIZE EFI_GUID_SIZE
@@ -88,8 +88,8 @@ struct efi_signature_data {
     struct efi_guid signature_owner;
     // unsigned char signature_data[];
 };
-void efi_signature_data_read(struct efi_signature_data *self, unsigned char *in);
-void efi_signature_data_write(struct efi_signature_data *self, unsigned char *out);
+void efi_signature_data_read(struct efi_signature_data *self, const unsigned char *in);
+void efi_signature_data_write(const struct efi_signature_data *self, unsigned char *out);
 
 #define EFI_SIGNATURE_LIST_SIZE (EFI_GUID_SIZE + 12)
 struct efi_signature_list {
@@ -100,7 +100,7 @@ struct efi_signature_list {
     // unsigned char signature_header[signature_header_size];
     // struct efi_signature_data signatures[];
 };
-void efi_signature_list_read(struct efi_signature_list *self, unsigned char *in);
-void efi_signature_list_write(struct efi_signature_list *self, unsigned char *out);
+void efi_signature_list_read(struct efi_signature_list *self, const unsigned char *in);
+void efi_signature_list_write(const struct efi_signature_list *self, unsigned char *out);
 
 #endif

@@ -36,13 +36,13 @@ static const uint_least32_t sha256_round[64] = {
     0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2
 };
 
-static void sha256_block(uint_least32_t *state, unsigned char *in) {
+static void sha256_block(uint_least32_t *state, const unsigned char *in) {
     uint_least32_t w[64];
     uint_least32_t r[72];
 
     for (int i = 0; i < 8; ++i) r[7 - i] = state[i];
     for (size_t i = 0; i < 16; ++i) {
-        unsigned char *x = in + i * 4;
+        const unsigned char *x = in + i * 4;
         w[i] = (
             ((uint_least32_t)x[0] << 24) |
             ((uint_least32_t)x[1] << 16) |
@@ -77,7 +77,7 @@ void sha256_init(struct sha256 *self) {
     self->buffer_size = 0;
 }
 
-void sha256_update(struct sha256 *self, unsigned char *in, size_t size) {
+void sha256_update(struct sha256 *self, const unsigned char *in, size_t size) {
     if (self->buffer_size > 0) {
         unsigned num_to_read = SHA256_BLOCK_SIZE - self->buffer_size;
         if (num_to_read > size) num_to_read = (unsigned)size;
@@ -103,7 +103,7 @@ void sha256_update(struct sha256 *self, unsigned char *in, size_t size) {
     }
 }
 
-void sha256_finish(struct sha256 *self, unsigned char *hash) {
+void sha256_finish(struct sha256 *self, unsigned char *out_hash) {
     unsigned byte_count = self->buffer_size;
 
     self->buffer[self->buffer_size++] = 0x80;
@@ -126,7 +126,7 @@ void sha256_finish(struct sha256 *self, unsigned char *hash) {
     sha256_block(&self->state[0], &self->buffer[0]);
     for (size_t i = 0; i < 8; ++i) {
         uint_least32_t state = self->state[i];
-        unsigned char *dest = hash + i * 4;
+        unsigned char *dest = out_hash + i * 4;
         dest[0] = (unsigned char)((state >> 24) & 0xFF);
         dest[1] = (unsigned char)((state >> 16) & 0xFF);
         dest[2] = (unsigned char)((state >> 8) & 0xFF);

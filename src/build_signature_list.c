@@ -10,7 +10,12 @@
 #include <stdio.h>
 #include <string.h>
 
-static int build_signature_list(struct efi_guid *signature_type, char **input_sig_datas, size_t input_sig_datas_len, char *output_esl) {
+static int build_signature_list(
+    const struct efi_guid *signature_type,
+    const char *const *input_sig_datas,
+    size_t input_sig_datas_len,
+    const char *output_esl
+) {
     int status = -1;
     struct file out;
     file_init(&out);
@@ -64,7 +69,7 @@ static int build_signature_list(struct efi_guid *signature_type, char **input_si
     return status;
 }
 
-static int build_signature_list_usage(FILE *file, char *parent, char **argv) {
+static int build_signature_list_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... SIGNATURE_TYPE_GUID SIGNATURE_DATA...\n"
@@ -77,9 +82,9 @@ static int build_signature_list_usage(FILE *file, char *parent, char **argv) {
     );
 }
 
-int build_signature_list_main(char *parent, int argc, char **argv) {
+int build_signature_list_main(const char *parent, int argc, const char *const *argv) {
     bool help = false;
-    char *output_file = "-";
+    const char *output_file = "-";
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)   { argparse_arg = "h"; break; }
         if (strcmp(argparse_long_opt, "output") == 0) { argparse_arg = "o"; break; }
@@ -105,7 +110,7 @@ int build_signature_list_main(char *parent, int argc, char **argv) {
         return build_signature_list_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *signature_type_guid = argv[argparse_pos++];
+    const char *signature_type_guid = argv[argparse_pos++];
     if (signature_type_guid == NULL) {
         (void)fprintf(stderr, "ERROR: Missing SIGNATURE_TYPE_GUID\n\n");
         goto err_usage;

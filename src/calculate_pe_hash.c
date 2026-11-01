@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static int calculate_pe_hash(char *input_pe, char *output_sha256) {
+static int calculate_pe_hash(const char *input_pe, const char *output_sha256) {
     int status = -1;
     unsigned char *input_buffer = NULL;
     struct file out;
@@ -45,7 +45,7 @@ static int calculate_pe_hash(char *input_pe, char *output_sha256) {
     return status;
 }
 
-static int calculate_pe_hash_usage(FILE *file, char *parent, char **argv) {
+static int calculate_pe_hash_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... PE_IMAGE\n"
@@ -58,9 +58,9 @@ static int calculate_pe_hash_usage(FILE *file, char *parent, char **argv) {
     );
 }
 
-int calculate_pe_hash_main(char *parent, char **argv) {
+int calculate_pe_hash_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_file = "-";
+    const char *output_file = "-";
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)   { argparse_arg = "h"; break; }
         if (strcmp(argparse_long_opt, "output") == 0) { argparse_arg = "o"; break; }
@@ -86,7 +86,7 @@ int calculate_pe_hash_main(char *parent, char **argv) {
         return calculate_pe_hash_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *pe_image = argv[argparse_pos++];
+    const char *pe_image = argv[argparse_pos++];
     if (pe_image == NULL) {
         (void)fprintf(stderr, "ERROR: Missing PE_IMAGE\n\n");
         goto err_usage;

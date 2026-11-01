@@ -11,7 +11,7 @@
 static const char
 util_printable_ascii[] = " !\"#\0%&\'()*+,-./0123456789:;<=>?\0ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_\0abcdefghijklmnopqrstuvwxyz{|}~";
 
-int util_parse_int(char *buffer, int max_chars, uint_least32_t *out_number) {
+int util_parse_int(const char *buffer, int max_chars, uint_least32_t *out_number) {
     uint_least32_t result = 0;
     int i = 0;
     for (; i < max_chars; ++i) {
@@ -27,7 +27,7 @@ int util_parse_int(char *buffer, int max_chars, uint_least32_t *out_number) {
     return i;
 }
 
-int util_parse_hex(char *buffer, int max_chars, uint_least32_t *out_number) {
+int util_parse_hex(const char *buffer, int max_chars, uint_least32_t *out_number) {
     uint_least32_t result = 0;
     int i = 0;
     for (; i < max_chars; ++i) {
@@ -91,7 +91,7 @@ char util_from_printable_ascii(unsigned char ascii) {
     return util_printable_ascii[ascii - 32];
 }
 
-int util_parse_guid(struct efi_guid *guid, char *buffer) {
+int util_parse_guid(struct efi_guid *guid, const char *buffer) {
     uint_least32_t parsed;
     int num_parsed = util_parse_hex(buffer, 8, &parsed);
     if (num_parsed != 8 || buffer[num_parsed] != '-') return -1;
@@ -126,8 +126,8 @@ int util_parse_guid(struct efi_guid *guid, char *buffer) {
     return 0;
 }
 
-void util_print_guid(struct efi_guid *guid, char *buffer) {
-    char *hex_table = "0123456789abcdef";
+void util_print_guid(const struct efi_guid *guid, char *buffer) {
+    const char *hex_table = "0123456789abcdef";
 
     char *pos = buffer;
     for (int i = 0; i < 4; ++i) {
@@ -157,7 +157,7 @@ void util_print_guid(struct efi_guid *guid, char *buffer) {
     *pos = '\0';
 }
 
-int util_parse_timestamp(struct efi_time *timestamp, char *buffer) {
+int util_parse_timestamp(struct efi_time *timestamp, const char *buffer) {
     uint_least32_t parsed;
     int num_parsed = util_parse_int(buffer, 4, &parsed);
     if (num_parsed != 4 || parsed < 1900 || parsed > 9999 || buffer[num_parsed] != '-') return -1;
@@ -202,7 +202,7 @@ int util_parse_timestamp(struct efi_time *timestamp, char *buffer) {
     return 0;
 }
 
-void util_print_timestamp(struct efi_time *timestamp, char *buffer_end) {
+void util_print_timestamp(const struct efi_time *timestamp, char *buffer_end) {
     char *pos = buffer_end;
     unsigned n;
 
@@ -227,7 +227,7 @@ void util_print_timestamp(struct efi_time *timestamp, char *buffer_end) {
 }
 
 #define READ_SIZE 4096
-int util_read_full(char *file, unsigned char **out_buffer, size_t *out_size) {
+int util_read_full(const char *file, unsigned char **out_buffer, size_t *out_size) {
     struct file in;
     file_init(&in);
     unsigned char *buffer = NULL;
@@ -261,7 +261,7 @@ int util_read_full(char *file, unsigned char **out_buffer, size_t *out_size) {
 #undef READ_SIZE
 
 #define READ_SIZE 4096
-int util_read_full_string(char *file, char **out_string, size_t *out_len) {
+int util_read_full_string(const char *file, char **out_string, size_t *out_len) {
     struct file in;
     file_init(&in);
     char *string = NULL;
@@ -294,14 +294,14 @@ int util_read_full_string(char *file, char **out_string, size_t *out_len) {
 }
 #undef READ_SIZE
 
-int util_concatenate(char **input_files, char *output_file) {
+int util_concatenate(const char *const *input_files, const char *output_file) {
     int status = -1;
     struct file out;
     file_init(&out);
 
     if (file_open(&out, output_file, FILE_MODE_WRITE) < 0) goto err_cleanup;
 
-    for (char **file_iter = input_files; *file_iter != NULL; ++file_iter) {
+    for (const char *const *file_iter = input_files; *file_iter != NULL; ++file_iter) {
         unsigned char *buffer;
         size_t size;
         if (util_read_full(*file_iter, &buffer, &size) < 0) goto err_cleanup;
@@ -317,31 +317,32 @@ int util_concatenate(char **input_files, char *output_file) {
     return status;
 }
 
-int util_puts_attribute_args(uint_least32_t attributes) {
-    static const uint_least32_t supported_attributes[] = {
-        EFI_VARIABLE_NON_VOLATILE,
-        EFI_VARIABLE_BOOTSERVICE_ACCESS,
-        EFI_VARIABLE_RUNTIME_ACCESS,
-        EFI_VARIABLE_APPEND_WRITE,
-        EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS
-    };
-    static const char *supported_attributes_args[] = {
-        "--non-volatile",
-        "--bootservice-access",
-        "--runtime-access",
-        "--append-write",
-        "--time-based-auth-access",
-    };
+static const uint_least32_t util_supported_attributes[] = {
+    EFI_VARIABLE_NON_VOLATILE,
+    EFI_VARIABLE_BOOTSERVICE_ACCESS,
+    EFI_VARIABLE_RUNTIME_ACCESS,
+    EFI_VARIABLE_APPEND_WRITE,
+    EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS
+};
 
+static const char *util_supported_attributes_args[] = {
+    "--non-volatile",
+    "--bootservice-access",
+    "--runtime-access",
+    "--append-write",
+    "--time-based-auth-access",
+};
+
+int util_puts_attribute_args(uint_least32_t attributes) {
     bool first = true;
     uint_least32_t supported_attributes_mask = 0;
-    for (size_t i = 0; i < x_ARRAY_LEN(supported_attributes); ++i) {
-        uint_least32_t attribute = supported_attributes[i];
+    for (size_t i = 0; i < x_ARRAY_LEN(util_supported_attributes); ++i) {
+        uint_least32_t attribute = util_supported_attributes[i];
         supported_attributes_mask |= attribute;
 
         if (attributes & attribute) {
             if (first) first = false; else if (fputs(" ", stdout) == EOF) return -1;
-            if (fputs(supported_attributes_args[i], stdout) == EOF) return -1;
+            if (fputs(util_supported_attributes_args[i], stdout) == EOF) return -1;
         }
     }
     if ((attributes & supported_attributes_mask) != attributes) return -1;

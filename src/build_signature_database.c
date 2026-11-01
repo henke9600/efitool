@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static int build_signature_database_usage(FILE *file, char *parent, char **argv) {
+static int build_signature_database_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... SIGNATURE_LIST...\n"
@@ -21,9 +21,9 @@ static int build_signature_database_usage(FILE *file, char *parent, char **argv)
     );
 }
 
-int build_signature_database_main(char *parent, char **argv) {
+int build_signature_database_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_file = "-";
+    const char *output_file = "-";
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)   { argparse_arg = "h"; break; }
         if (strcmp(argparse_long_opt, "output") == 0) { argparse_arg = "o"; break; }

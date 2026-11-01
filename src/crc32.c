@@ -20,7 +20,7 @@ void crc32_state_init(struct crc32_state *self) {
     self->crc = 0xFFFFFFFF;
 }
 
-void crc32_state_update(struct crc32_state *self, unsigned char *buffer, size_t size) {
+void crc32_state_update(struct crc32_state *self, const unsigned char *buffer, size_t size) {
     uint_least32_t crc = self->crc;
     for (size_t i = 0; i < size; ++i) {
         crc = (crc >> 8) ^ crc32_table[(crc ^ buffer[i]) & 0xFF];
@@ -28,6 +28,6 @@ void crc32_state_update(struct crc32_state *self, unsigned char *buffer, size_t 
     self->crc = crc;
 }
 
-uint_least32_t crc32_state_finish(struct crc32_state *self) {
+uint_least32_t crc32_state_finish(const struct crc32_state *self) {
     return self->crc ^ 0xFFFFFFFF;
 }

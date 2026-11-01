@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static int convert_from_hex(char *input_hex, char *output) {
+static int convert_from_hex(const char *input_hex, const char *output) {
     int status = -1;
     char *input_buffer = NULL;
     unsigned char *output_buffer = NULL;
@@ -57,7 +57,7 @@ static int convert_from_hex(char *input_hex, char *output) {
     return status;
 }
 
-static int convert_from_hex_usage(FILE *file, char *parent, char **argv) {
+static int convert_from_hex_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... HEX_DATA\n"
@@ -70,9 +70,9 @@ static int convert_from_hex_usage(FILE *file, char *parent, char **argv) {
     );
 }
 
-int convert_from_hex_main(char *parent, char **argv) {
+int convert_from_hex_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_file = "-";
+    const char *output_file = "-";
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)   { argparse_arg = "h"; break; }
         if (strcmp(argparse_long_opt, "output") == 0) { argparse_arg = "o"; break; }
@@ -98,7 +98,7 @@ int convert_from_hex_main(char *parent, char **argv) {
         return convert_from_hex_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *hex_data = argv[argparse_pos++];
+    const char *hex_data = argv[argparse_pos++];
     if (hex_data == NULL) {
         (void)fprintf(stderr, "ERROR: Missing HEX_DATA\n\n");
         goto err_usage;

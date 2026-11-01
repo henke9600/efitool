@@ -13,7 +13,7 @@
 
 #define OUT_NAME_FMT "%s%zu%s"
 #define CONSTANT_SIZE (4 + 4 + EFI_GUID_SIZE + 4 + 4)
-static int parse_dmpstore_list(char *input_ds_list, char *output_prefix, char *output_suffix) {
+static int parse_dmpstore_list(const char *input_ds_list, const char *output_prefix, const char *output_suffix) {
     int status = -1;
     unsigned char *input_buffer = NULL;
 
@@ -71,7 +71,7 @@ static int parse_dmpstore_list(char *input_ds_list, char *output_prefix, char *o
 #undef OUT_NAME_FMT
 #undef CONSTANT_SIZE
 
-static int parse_dmpstore_list_usage(FILE *file, char *parent, char **argv) {
+static int parse_dmpstore_list_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... DMPSTORE_LIST\n"
@@ -85,10 +85,10 @@ static int parse_dmpstore_list_usage(FILE *file, char *parent, char **argv) {
     );
 }
 
-int parse_dmpstore_list_main(char *parent, char **argv) {
+int parse_dmpstore_list_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_prefix = NULL;
-    char *suffix = ".dsd";
+    const char *output_prefix = NULL;
+    const char *suffix = ".dsd";
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)          { argparse_arg = "h"; break; }
         if (strcmp(argparse_long_opt, "output-prefix") == 0) { argparse_arg = "o"; break; }
@@ -119,7 +119,7 @@ int parse_dmpstore_list_main(char *parent, char **argv) {
         return parse_dmpstore_list_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *dmpstore_list = argv[argparse_pos++];
+    const char *dmpstore_list = argv[argparse_pos++];
     if (dmpstore_list == NULL) {
         (void)fprintf(stderr, "ERROR: Missing DMPSTORE_LIST\n\n");
         goto err_usage;

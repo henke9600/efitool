@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static int convert_to_hex(bool lowercase, bool no_newline, char *input, char *output_hex) {
+static int convert_to_hex(bool lowercase, bool no_newline, const char *input, const char *output_hex) {
     int status = -1;
     unsigned char *input_buffer = NULL;
     char *hex_buffer = NULL;
@@ -26,7 +26,7 @@ static int convert_to_hex(bool lowercase, bool no_newline, char *input, char *ou
 
     if (file_open(&out, output_hex, FILE_MODE_WRITE | FILE_MODE_TEXT) < 0) goto err_cleanup;
 
-    char *hex_table = lowercase ? "0123456789abcdef" : "0123456789ABCDEF";
+    const char *hex_table = lowercase ? "0123456789abcdef" : "0123456789ABCDEF";
     for (size_t i = 0; i < input_size; ++i) {
         size_t hex_i = i * 2;
         unsigned char byte = input_buffer[i];
@@ -48,7 +48,7 @@ static int convert_to_hex(bool lowercase, bool no_newline, char *input, char *ou
     return status;
 }
 
-static int convert_to_hex_usage(FILE *file, char *parent, char **argv) {
+static int convert_to_hex_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... DATA\n"
@@ -63,9 +63,9 @@ static int convert_to_hex_usage(FILE *file, char *parent, char **argv) {
     );
 }
 
-int convert_to_hex_main(char *parent, char **argv) {
+int convert_to_hex_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_file = "-";
+    const char *output_file = "-";
     bool no_newline = false;
     bool lowercase = false;
     ARGPARSE_BEGIN(argv)
@@ -103,7 +103,7 @@ int convert_to_hex_main(char *parent, char **argv) {
         return convert_to_hex_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *data = argv[argparse_pos++];
+    const char *data = argv[argparse_pos++];
     if (data == NULL) {
         (void)fprintf(stderr, "ERROR: Missing DATA\n\n");
         goto err_usage;

@@ -31,22 +31,22 @@ struct pe_section_header {
     uint_least32_t size_of_raw_data;
     uint_least32_t pointer_to_raw_data;
 };
-static void pe_section_header_read(struct pe_section_header *self, unsigned char *in) {
+static void pe_section_header_read(struct pe_section_header *self, const unsigned char *in) {
     self->size_of_raw_data = x_load_u32(in + 16);
     self->pointer_to_raw_data = x_load_u32(in + 20);
 }
 
-void pe_data_directory_read(struct pe_data_directory *self, unsigned char *in) {
+void pe_data_directory_read(struct pe_data_directory *self, const unsigned char *in) {
     self->virtual_address = x_load_u32(in);
     self->size = x_load_u32(in + 4);
 }
-void pe_data_directory_write(struct pe_data_directory *self, unsigned char *out) {
+void pe_data_directory_write(const struct pe_data_directory *self, unsigned char *out) {
     x_store_u32(self->virtual_address, out);
     x_store_u32(self->size, out + 4);
 }
 
 int pe_parse(
-    unsigned char *in, size_t in_size,
+    const unsigned char *in, size_t in_size,
     size_t *out_checksum_offset,
     struct pe_data_directory *out_certificate_table, size_t *out_certificate_table_offset,
     unsigned char *out_pe_hash
@@ -179,7 +179,7 @@ int pe_parse(
 }
 
 int pe_authenticode_spcidc_auth_attrs(
-    unsigned char *pe_hash,
+    const unsigned char *pe_hash,
     unsigned char **out_spcidc, size_t *out_spcidc_size,
     unsigned char **out_auth_attrs, size_t *out_auth_attrs_size, size_t *out_auth_attrs_payload_size
 ) {

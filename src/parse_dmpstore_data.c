@@ -14,7 +14,7 @@
 
 #define CONSTANT_SIZE (4 + 4 + EFI_GUID_SIZE + 4 + 4)
 #define VAR_NAME_UCS2_OFFSET 8
-static int parse_dmpstore_data(char *dmpstore_data, char *output_data) {
+static int parse_dmpstore_data(const char *dmpstore_data, const char *output_data) {
     int status = -1;
     unsigned char *input_buffer = NULL;
     char *var_name = NULL;
@@ -91,7 +91,7 @@ static int parse_dmpstore_data(char *dmpstore_data, char *output_data) {
 #undef CONSTANT_SIZE
 #undef VAR_NAME_UCS2_OFFSET
 
-static int parse_dmpstore_data_usage(FILE *file, char *parent, char **argv) {
+static int parse_dmpstore_data_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... DMPSTORE_DATA\n"
@@ -104,9 +104,9 @@ static int parse_dmpstore_data_usage(FILE *file, char *parent, char **argv) {
     );
 }
 
-int parse_dmpstore_data_main(char *parent, char **argv) {
+int parse_dmpstore_data_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_file = NULL;
+    const char *output_file = NULL;
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)   { argparse_arg = "h"; break; }
         if (strcmp(argparse_long_opt, "output") == 0) { argparse_arg = "o"; break; }
@@ -133,7 +133,7 @@ int parse_dmpstore_data_main(char *parent, char **argv) {
         return parse_dmpstore_data_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *dmpstore_data = argv[argparse_pos++];
+    const char *dmpstore_data = argv[argparse_pos++];
     if (dmpstore_data == NULL) {
         (void)fprintf(stderr, "ERROR: Missing DMPSTORE_DATA\n\n");
         goto err_usage;

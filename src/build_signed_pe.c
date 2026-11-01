@@ -15,10 +15,10 @@
 #include <string.h>
 
 static int build_signed_pe(
-    char *input_pe,
-    char *input_signature,
-    char *input_x509,
-    char *output_pe
+    const char *input_pe,
+    const char *input_signature,
+    const char *input_x509,
+    const char *output_pe
 ) {
     int status = -1;
     unsigned char *input_pe_buffer = NULL;
@@ -68,11 +68,11 @@ static int build_signed_pe(
         &spcidc, &spcidc_size,
         &auth_attrs, &auth_attrs_size, &auth_attrs_payload_size
     ) < 0) goto err_cleanup;
-    unsigned char *auth_attrs_payload = auth_attrs + (auth_attrs_size - auth_attrs_payload_size);
+    const unsigned char *auth_attrs_payload = auth_attrs + (auth_attrs_size - auth_attrs_payload_size);
 
-    unsigned char *serial_number;
+    const unsigned char *serial_number;
     size_t serial_number_size;
-    unsigned char *issuer;
+    const unsigned char *issuer;
     size_t issuer_size;
     if (asn1_parse_x509(
         input_x509_buffer, input_x509_size,
@@ -82,11 +82,10 @@ static int build_signed_pe(
 
     if (input_x509_size + serial_number_size + issuer_size > x_SAFE_SIZE - input_signature_size) goto err_cleanup;
 
-    uint_least32_t spc_indirect_data_obj[] = { 1 * 40 + 3, 6, 1, 4, 1, 311, 2, 1, 4 };
     struct asn1_pkcs7_signed_data_content_info_ctx signed_data_ctx;
     size_t signed_data_size = asn1_pkcs7_signed_data_content_info_write(
         &signed_data_ctx,
-        &spc_indirect_data_obj[0], x_ARRAY_LEN(spc_indirect_data_obj),
+        &asn1_spc_indirect_data_obj[0], x_ARRAY_LEN(asn1_spc_indirect_data_obj),
         spcidc, spcidc_size,
         input_x509_buffer, input_x509_size,
         issuer, issuer_size,
@@ -113,7 +112,7 @@ static int build_signed_pe(
     win_certificate_write(&win_cert, win_cert_buffer);
     asn1_pkcs7_signed_data_content_info_write(
         &signed_data_ctx,
-        &spc_indirect_data_obj[0], x_ARRAY_LEN(spc_indirect_data_obj),
+        &asn1_spc_indirect_data_obj[0], x_ARRAY_LEN(asn1_spc_indirect_data_obj),
         spcidc, spcidc_size,
         input_x509_buffer, input_x509_size,
         issuer, issuer_size,
@@ -122,8 +121,11 @@ static int build_signed_pe(
         input_signature_buffer, input_signature_size,
         win_cert_buffer + WIN_CERTIFICATE_SIZE
     );
-    static const unsigned char zeroes[7] = {0};
-    if (win_cert_padding > 0) memcpy(win_cert_buffer + win_cert_unpadded_size, &zeroes[0], win_cert_padding);
+    if (win_cert_padding > 0) {
+        unsigned char zeroes[7];
+        memset(&zeroes[0], 0, sizeof(zeroes));
+        memcpy(win_cert_buffer + win_cert_unpadded_size, &zeroes[0], win_cert_padding);
+    }
 
     // Update certificate table
     certificate_table.virtual_address = (uint_least32_t)win_cert_offset;
@@ -162,7 +164,7 @@ static int build_signed_pe(
     return status;
 }
 
-static int build_signed_pe_usage(FILE *file, char *parent, char **argv) {
+static int build_signed_pe_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... CERTIFICATE SIGNATURE PE_IMAGE\n"
@@ -175,9 +177,9 @@ static int build_signed_pe_usage(FILE *file, char *parent, char **argv) {
     );
 }
 
-int build_signed_pe_main(char *parent, char **argv) {
+int build_signed_pe_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_file = "-";
+    const char *output_file = "-";
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)   { argparse_arg = "h"; break; }
         if (strcmp(argparse_long_opt, "output") == 0) { argparse_arg = "o"; break; }
@@ -203,19 +205,19 @@ int build_signed_pe_main(char *parent, char **argv) {
         return build_signed_pe_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *certificate = argv[argparse_pos++];
+    const char *certificate = argv[argparse_pos++];
     if (certificate == NULL) {
         (void)fprintf(stderr, "ERROR: Missing CERTIFICATE\n\n");
         goto err_usage;
     }
 
-    char *signature = argv[argparse_pos++];
+    const char *signature = argv[argparse_pos++];
     if (signature == NULL) {
         (void)fprintf(stderr, "ERROR: Missing SIGNATURE\n\n");
         goto err_usage;
     }
 
-    char *pe_image = argv[argparse_pos++];
+    const char *pe_image = argv[argparse_pos++];
     if (pe_image == NULL) {
         (void)fprintf(stderr, "ERROR: Missing PE_IMAGE\n\n");
         goto err_usage;

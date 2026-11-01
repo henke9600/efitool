@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static int prepare_pe_signing(char *input_pe_sha256, char *output_to_be_signed) {
+static int prepare_pe_signing(const char *input_pe_sha256, const char *output_to_be_signed) {
     int status = -1;
     unsigned char *input_buffer = NULL;
     unsigned char *spcidc = NULL;
@@ -48,7 +48,7 @@ static int prepare_pe_signing(char *input_pe_sha256, char *output_to_be_signed) 
     return status;
 }
 
-static int prepare_pe_signing_usage(FILE *file, char *parent, char **argv) {
+static int prepare_pe_signing_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... PE_HASH\n"
@@ -61,9 +61,9 @@ static int prepare_pe_signing_usage(FILE *file, char *parent, char **argv) {
     );
 }
 
-int prepare_pe_signing_main(char *parent, char **argv) {
+int prepare_pe_signing_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_file = "-";
+    const char *output_file = "-";
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)   { argparse_arg = "h"; break; }
         if (strcmp(argparse_long_opt, "output") == 0) { argparse_arg = "o"; break; }
@@ -89,7 +89,7 @@ int prepare_pe_signing_main(char *parent, char **argv) {
         return prepare_pe_signing_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *pe_hash = argv[argparse_pos++];
+    const char *pe_hash = argv[argparse_pos++];
     if (pe_hash == NULL) {
         (void)fprintf(stderr, "ERROR: Missing PE_HASH\n\n");
         goto err_usage;

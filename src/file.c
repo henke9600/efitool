@@ -11,10 +11,10 @@ void file_init(struct file *self) {
     self->handle = NULL;
 }
 
-int file_open(struct file *self, char *file, int mode) {
+int file_open(struct file *self, const char *file, int mode) {
     if (file == NULL) return 0;
 
-    char *mode_string;
+    const char *mode_string;
     switch (mode) {
         case 0:                                mode_string = "rb"; break;
         case FILE_MODE_TEXT:                   mode_string = "r";  break;
@@ -43,13 +43,13 @@ int file_open(struct file *self, char *file, int mode) {
 
     err:;
     // fopen and freopen are not guaranteed to set errno
-    char *error = "Unknown error";
+    const char *error = "Unknown error";
     if (errno != 0) error = strerror(errno);
     (void)fprintf(stderr, "ERROR: Failed to open '%s': %s\n", file, error);
     return -1;
 }
 
-int file_read(struct file *self, void *buffer, size_t size, size_t *out_num_read) {
+int file_read(const struct file *self, void *buffer, size_t size, size_t *out_num_read) {
     if (self->handle == NULL) return -1;
 
     *out_num_read = fread(buffer, 1, size, self->handle);
@@ -59,10 +59,10 @@ int file_read(struct file *self, void *buffer, size_t size, size_t *out_num_read
     return 1;
 }
 
-int file_gets(struct file *self, char *buffer, int num_to_read) {
+int file_gets(const struct file *self, char *buffer, int num_to_read) {
     if (self->handle == NULL) return -1;
 
-    char *res = fgets(buffer, num_to_read, self->handle);
+    const char *res = fgets(buffer, num_to_read, self->handle);
     if (ferror(self->handle) != 0) return -1;
     if (feof(self->handle) != 0) {
         if (res == NULL) buffer[0] = '\0'; // Make sure a valid string is always written on success
@@ -72,21 +72,21 @@ int file_gets(struct file *self, char *buffer, int num_to_read) {
     return 1;
 }
 
-int file_write(struct file *self, void *buffer, size_t size) {
+int file_write(const struct file *self, const void *buffer, size_t size) {
     if (self->handle == NULL || size == 0) return 0;
 
     if (fwrite(buffer, 1, size, self->handle) != size) return -1;
     return 0;
 }
 
-int file_puts(struct file *self, char *string) {
+int file_puts(const struct file *self, const char *string) {
     if (self->handle == NULL) return 0;
 
     if (fputs(string, self->handle) == EOF) return -1;
     return 0;
 }
 
-int file_close(struct file *self) {
+int file_close(const struct file *self) {
     if (self->handle == NULL) return 0;
 
     return fclose(self->handle);

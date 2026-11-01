@@ -13,11 +13,11 @@
 #include <string.h>
 
 static int build_auth2_data(
-    struct efi_time *timestamp,
-    char *input_var_data,
-    char *input_signature,
-    char *input_x509,
-    char *output_auth2_data
+    const struct efi_time *timestamp,
+    const char *input_var_data,
+    const char *input_signature,
+    const char *input_x509,
+    const char *output_auth2_data
 ) {
     int status = -1;
     unsigned char *input_var_data_buffer = NULL;
@@ -36,9 +36,9 @@ static int build_auth2_data(
     size_t input_x509_size;
     if (util_read_full(input_x509, &input_x509_buffer, &input_x509_size) < 0) goto err_cleanup;
 
-    unsigned char *serial_number;
+    const unsigned char *serial_number;
     size_t serial_number_size;
-    unsigned char *issuer;
+    const unsigned char *issuer;
     size_t issuer_size;
     if (asn1_parse_x509(
         input_x509_buffer, input_x509_size,
@@ -48,11 +48,10 @@ static int build_auth2_data(
 
     if (input_x509_size + serial_number_size + issuer_size > x_SAFE_SIZE - input_signature_size) goto err_cleanup;
 
-    uint_least32_t data_obj[] = { 1 * 40 + 2, 840, 113549, 1, 7, 1 };
     struct asn1_pkcs7_signed_data_content_info_ctx signed_data_ctx;
     size_t signed_data_size = asn1_pkcs7_signed_data_content_info_write(
         &signed_data_ctx,
-        &data_obj[0], x_ARRAY_LEN(data_obj),
+        &asn1_pkcs7_data_obj[0], x_ARRAY_LEN(asn1_pkcs7_data_obj),
         NULL, 0,
         input_x509_buffer, input_x509_size,
         issuer, issuer_size,
@@ -82,7 +81,7 @@ static int build_auth2_data(
 
     asn1_pkcs7_signed_data_content_info_write(
         &signed_data_ctx,
-        &data_obj[0], x_ARRAY_LEN(data_obj),
+        &asn1_pkcs7_data_obj[0], x_ARRAY_LEN(asn1_pkcs7_data_obj),
         NULL, 0,
         input_x509_buffer, input_x509_size,
         issuer, issuer_size,
@@ -107,7 +106,7 @@ static int build_auth2_data(
 
 #define TIMESTAMP_DEFAULT "1970-01-01 00:00:00"
 #define TIMESTAMP_INFO "formatted as \"%%Y-%%m-%%d %%H:%%M:%%S\". Defaults to \""
-static int build_auth2_data_usage(FILE *file, char *parent, char **argv) {
+static int build_auth2_data_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s %s [OPTION]... CERTIFICATE SIGNATURE VARIABLE_DATA\n"
@@ -122,9 +121,9 @@ static int build_auth2_data_usage(FILE *file, char *parent, char **argv) {
 }
 #undef TIMESTAMP_INFO
 
-int build_auth2_data_main(char *parent, char **argv) {
+int build_auth2_data_main(const char *parent, const char *const *argv) {
     bool help = false;
-    char *output_file = "-";
+    const char *output_file = "-";
     struct efi_time timestamp;
     util_parse_timestamp(&timestamp, TIMESTAMP_DEFAULT);
     ARGPARSE_BEGIN(argv)
@@ -157,19 +156,19 @@ int build_auth2_data_main(char *parent, char **argv) {
         return build_auth2_data_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
     }
 
-    char *certificate = argv[argparse_pos++];
+    const char *certificate = argv[argparse_pos++];
     if (certificate == NULL) {
         (void)fprintf(stderr, "ERROR: Missing CERTIFICATE\n\n");
         goto err_usage;
     }
 
-    char *signature = argv[argparse_pos++];
+    const char *signature = argv[argparse_pos++];
     if (signature == NULL) {
         (void)fprintf(stderr, "ERROR: Missing SIGNATURE\n\n");
         goto err_usage;
     }
 
-    char *variable_data = argv[argparse_pos++];
+    const char *variable_data = argv[argparse_pos++];
     if (variable_data == NULL) {
         (void)fprintf(stderr, "ERROR: Missing VARIABLE_DATA\n\n");
         goto err_usage;

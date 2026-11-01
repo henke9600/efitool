@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-unsigned x_load_u16(unsigned char *in) {
+unsigned x_load_u16(const unsigned char *in) {
     return (
         (unsigned)in[0] |
         ((unsigned)in[1] << 8)
@@ -14,7 +14,7 @@ void x_store_u16(unsigned in, unsigned char *out) {
     out[1] = (unsigned char)((in >> 8) & 0xFF);
 }
 
-uint_least32_t x_load_u32(unsigned char *in) {
+uint_least32_t x_load_u32(const unsigned char *in) {
     return (
         (uint_least32_t)in[0] |
         ((uint_least32_t)in[1] << 8) |

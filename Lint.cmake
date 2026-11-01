@@ -21,7 +21,7 @@ string(CONCAT CLANG_TIDY_CHECKS
     "cert-*,"
     "misc-*"
 )
-set(CPPCHECK_SUPPRESS --suppress=constParameterPointer --suppress=constVariablePointer)
+set(CPPCHECK_SUPPRESS "")
 
 function(lint BUILD_TYPE)
     execute_process(
