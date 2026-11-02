@@ -24,7 +24,6 @@
                         argparse_long_opt = argparse_arg + 1; \
 
 #define ARGPARSE_LONG_OPTS_TO_FLAGS_DELIMITER \
-                        argparse_arg = "\n"; \
                         break; \
                     } \
                 } \

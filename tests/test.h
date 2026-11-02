@@ -53,6 +53,10 @@
     }
 
 #define TEST_ASSERT_STR_EQUALS(A, B) \
+    if ((A) == NULL) { \
+        (void)printf("FAIL: %s:%d: String is NULL\n", __FILE__, __LINE__); \
+        return 1; \
+    } \
     if (strcmp((A), (B)) != 0) { \
         (void)printf("FAIL: %s:%d: \"%s\" != \"%s\"\n", __FILE__, __LINE__, (A), (B)); \
         return 1; \

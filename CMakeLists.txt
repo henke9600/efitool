@@ -44,8 +44,9 @@ if(BUILD_TESTING)
         add_test(NAME ${name} COMMAND test_${name})
     endfunction()
 
-    add_unit_test(x)
+    add_unit_test(argparse)
     add_unit_test(sha256)
+    add_unit_test(x)
 endif()
 
 install(
