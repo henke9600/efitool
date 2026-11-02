@@ -129,9 +129,7 @@ int parse_dmpstore_data_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    if (help) {
-        return parse_dmpstore_data_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
-    }
+    if (help) return parse_dmpstore_data_usage(stdout, parent, argv);
 
     const char *dmpstore_data = argv[argparse_pos++];
     if (dmpstore_data == NULL) {
@@ -145,9 +143,9 @@ int parse_dmpstore_data_main(const char *parent, const char *const *argv) {
     }
 
     crc32_init();
-    return parse_dmpstore_data(dmpstore_data, output_file) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+    return parse_dmpstore_data(dmpstore_data, output_file);
 
     err_usage:
     parse_dmpstore_data_usage(stderr, parent, argv);
-    return EXIT_FAILURE;
+    return -1;
 }

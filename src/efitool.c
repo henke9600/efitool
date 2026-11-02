@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-static int usage(FILE *file, const char *const *argv) {
+static int efitool_usage(FILE *file, const char *const *argv) {
     return fprintf(
         file,
         "Usage: %s [OPTION]... COMMAND\n"
@@ -63,10 +63,7 @@ static int usage(FILE *file, const char *const *argv) {
     );
 }
 
-int main(int argc, char **argv_mutable) {
-    if (argc < 1) return EXIT_FAILURE;
-
-    const char *const *argv = (const char *const *)argv_mutable;
+static int efitool_main(int argc, const char *const *argv) {
     bool help = false;
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0) { argparse_arg = "h"; break; }
@@ -84,9 +81,7 @@ int main(int argc, char **argv_mutable) {
         goto err_usage;
     }
 
-    if (help) {
-        return usage(stdout, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
-    }
+    if (help) return efitool_usage(stdout, argv);
 
     int cmd_argc = argc - argparse_pos;
     const char *const *cmd_argv = argv + argparse_pos;
@@ -140,6 +135,12 @@ int main(int argc, char **argv_mutable) {
     }
 
     err_usage:
-    usage(stderr, argv);
-    return EXIT_FAILURE;
+    efitool_usage(stderr, argv);
+    return -1;
+}
+
+int main(int argc, char **argv) {
+    if (argc < 1) return EXIT_FAILURE;
+    if (efitool_main(argc, (const char *const *)argv) < 0) return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }

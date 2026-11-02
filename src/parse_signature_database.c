@@ -109,9 +109,7 @@ int parse_signature_database_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    if (help) {
-        return parse_signature_database_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
-    }
+    if (help) return parse_signature_database_usage(stdout, parent, argv);
 
     const char *signature_database = argv[argparse_pos++];
     if (signature_database == NULL) {
@@ -124,9 +122,9 @@ int parse_signature_database_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    return parse_signature_database(signature_database, output_prefix, suffix) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+    return parse_signature_database(signature_database, output_prefix, suffix);
 
     err_usage:
     parse_signature_database_usage(stderr, parent, argv);
-    return EXIT_FAILURE;
+    return -1;
 }

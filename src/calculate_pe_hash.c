@@ -82,9 +82,7 @@ int calculate_pe_hash_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    if (help) {
-        return calculate_pe_hash_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
-    }
+    if (help) return calculate_pe_hash_usage(stdout, parent, argv);
 
     const char *pe_image = argv[argparse_pos++];
     if (pe_image == NULL) {
@@ -97,9 +95,9 @@ int calculate_pe_hash_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    return calculate_pe_hash(pe_image, output_file) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+    return calculate_pe_hash(pe_image, output_file);
 
     err_usage:
     calculate_pe_hash_usage(stderr, parent, argv);
-    return EXIT_FAILURE;
+    return -1;
 }

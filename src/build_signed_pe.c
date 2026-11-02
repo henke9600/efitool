@@ -201,9 +201,7 @@ int build_signed_pe_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    if (help) {
-        return build_signed_pe_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
-    }
+    if (help) return build_signed_pe_usage(stdout, parent, argv);
 
     const char *certificate = argv[argparse_pos++];
     if (certificate == NULL) {
@@ -228,15 +226,9 @@ int build_signed_pe_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    int status = build_signed_pe(
-        pe_image,
-        signature,
-        certificate,
-        output_file
-    );
-    return status < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+    return build_signed_pe(pe_image, signature, certificate, output_file);
 
     err_usage:
     build_signed_pe_usage(stderr, parent, argv);
-    return EXIT_FAILURE;
+    return -1;
 }

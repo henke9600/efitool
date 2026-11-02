@@ -115,9 +115,7 @@ int parse_dmpstore_list_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    if (help) {
-        return parse_dmpstore_list_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
-    }
+    if (help) return parse_dmpstore_list_usage(stdout, parent, argv);
 
     const char *dmpstore_list = argv[argparse_pos++];
     if (dmpstore_list == NULL) {
@@ -130,9 +128,9 @@ int parse_dmpstore_list_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    return parse_dmpstore_list(dmpstore_list, output_prefix, suffix) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+    return parse_dmpstore_list(dmpstore_list, output_prefix, suffix);
 
     err_usage:
     parse_dmpstore_list_usage(stderr, parent, argv);
-    return EXIT_FAILURE;
+    return -1;
 }

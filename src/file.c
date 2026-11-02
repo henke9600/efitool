@@ -49,7 +49,7 @@ int file_open(struct file *self, const char *file, int mode) {
     return -1;
 }
 
-int file_read(const struct file *self, void *buffer, size_t size, size_t *out_num_read) {
+int file_read(const struct file *self, unsigned char *buffer, size_t size, size_t *out_num_read) {
     if (self->handle == NULL) return -1;
 
     *out_num_read = fread(buffer, 1, size, self->handle);
@@ -72,7 +72,7 @@ int file_gets(const struct file *self, char *buffer, int num_to_read) {
     return 1;
 }
 
-int file_write(const struct file *self, const void *buffer, size_t size) {
+int file_write(const struct file *self, const unsigned char *buffer, size_t size) {
     if (self->handle == NULL || size == 0) return 0;
 
     if (fwrite(buffer, 1, size, self->handle) != size) return -1;

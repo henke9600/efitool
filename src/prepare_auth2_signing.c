@@ -128,9 +128,7 @@ int prepare_auth2_signing_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    if (help) {
-        return prepare_auth2_signing_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
-    }
+    if (help) return prepare_auth2_signing_usage(stdout, parent, argv);
 
     const char *variable_name = argv[argparse_pos++];
     if (variable_name == NULL) {
@@ -191,10 +189,10 @@ int prepare_auth2_signing_main(const char *parent, const char *const *argv) {
         output_file
     );
     free(var_name_ucs2);
-    return status < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+    return status;
 
     err_usage:
     prepare_auth2_signing_usage(stderr, parent, argv);
-    return EXIT_FAILURE;
+    return -1;
 }
 #undef TIMESTAMP_DEFAULT

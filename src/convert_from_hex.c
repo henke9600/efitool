@@ -94,9 +94,7 @@ int convert_from_hex_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    if (help) {
-        return convert_from_hex_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
-    }
+    if (help) return convert_from_hex_usage(stdout, parent, argv);
 
     const char *hex_data = argv[argparse_pos++];
     if (hex_data == NULL) {
@@ -109,9 +107,9 @@ int convert_from_hex_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    return convert_from_hex(hex_data, output_file) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+    return convert_from_hex(hex_data, output_file);
 
     err_usage:
     convert_from_hex_usage(stderr, parent, argv);
-    return EXIT_FAILURE;
+    return -1;
 }

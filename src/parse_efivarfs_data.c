@@ -74,9 +74,7 @@ int parse_efivarfs_data_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    if (help) {
-        return parse_efivarfs_data_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
-    }
+    if (help) return parse_efivarfs_data_usage(stdout, parent, argv);
 
     const char *efivarfs_data = argv[argparse_pos++];
     if (efivarfs_data == NULL) {
@@ -89,9 +87,9 @@ int parse_efivarfs_data_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    return parse_efivarfs_data(efivarfs_data, output_file) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+    return parse_efivarfs_data(efivarfs_data, output_file);
 
     err_usage:
     parse_efivarfs_data_usage(stderr, parent, argv);
-    return EXIT_FAILURE;
+    return -1;
 }

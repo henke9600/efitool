@@ -106,9 +106,7 @@ int build_signature_list_main(const char *parent, int argc, const char *const *a
         goto err_usage;
     }
 
-    if (help) {
-        return build_signature_list_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
-    }
+    if (help) return build_signature_list_usage(stdout, parent, argv);
 
     const char *signature_type_guid = argv[argparse_pos++];
     if (signature_type_guid == NULL) {
@@ -131,9 +129,9 @@ int build_signature_list_main(const char *parent, int argc, const char *const *a
         &signature_type,
         argv + argparse_pos, (size_t)(argc - argparse_pos),
         output_file
-    ) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+    );
 
     err_usage:
     build_signature_list_usage(stderr, parent, argv);
-    return EXIT_FAILURE;
+    return -1;
 }

@@ -45,18 +45,16 @@ int build_dmpstore_list_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    if (help) {
-        return build_dmpstore_list_usage(stdout, parent, argv) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
-    }
+    if (help) return build_dmpstore_list_usage(stdout, parent, argv);
 
     if (argv[argparse_pos] == NULL) {
         (void)fprintf(stderr, "ERROR: Missing DMPSTORE_DATA\n\n");
         goto err_usage;
     }
 
-    return util_concatenate(argv + argparse_pos, output_file) < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+    return util_concatenate(argv + argparse_pos, output_file);
 
     err_usage:
     build_dmpstore_list_usage(stderr, parent, argv);
-    return EXIT_FAILURE;
+    return -1;
 }
