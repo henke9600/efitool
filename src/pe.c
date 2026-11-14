@@ -58,7 +58,7 @@ int pe_parse(
     ) return -1;
 
     uint_least32_t pe_file_address = x_load_u32(in + PE_FILE_ADDRESS_DOS_OFFSET);
-    if (pe_file_address > x_SAFE_SIZE || pe_file_address % 4 != 0) return -1;
+    if (pe_file_address > x_SAFE_SIZE || pe_file_address % 2 != 0) return -1;
 
     size_t pe_coff_offset = pe_file_address + 4;
     size_t pe_optional_offset = pe_coff_offset + PE_COFF_SIZE;
