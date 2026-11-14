@@ -32,7 +32,7 @@ static int test_store_load_u32(void) {
     return 0;
 }
 
-static const int_least32_t test_twos_complement_u16_values[] = { 0, 1, -1, 0x7FFF, -0x8000, 0x1234, -0x1234 };
+static const int_least32_t test_twos_complement_u16_values[] = { 0, 1, -1, 0x7FFF, -INT32_C(0x8000), 0x1234, -0x1234 };
 static const unsigned test_twos_complement_u16_expected[] = { 0, 1, 0xFFFF, 0x7FFF, 0x8000, 0x1234, 0xEDCC };
 
 static int test_twos_complement_u16(void) {
