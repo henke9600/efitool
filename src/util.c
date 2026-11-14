@@ -95,7 +95,7 @@ int util_parse_guid(struct efi_guid *guid, const char *buffer) {
     uint_least32_t parsed;
     int num_parsed = util_parse_hex(buffer, 8, &parsed);
     if (num_parsed != 8 || buffer[num_parsed] != '-') return -1;
-    guid->data1 = (unsigned)parsed;
+    guid->data1 = parsed;
     buffer += num_parsed + 1;
 
     num_parsed = util_parse_hex(buffer, 4, &parsed);
