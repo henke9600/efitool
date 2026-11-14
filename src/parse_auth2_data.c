@@ -58,12 +58,14 @@ static int parse_auth2_data(
     size_t x509_size;
     const unsigned char *signature;
     size_t signature_size;
-    size_t content_info_off = EFI_VARIABLE_AUTHENTICATION_2_SIZE;
-    size_t content_info_size = auth2.auth_info.hdr.length - WIN_CERTIFICATE_UEFI_GUID_SIZE;
-    if (asn1_parse_pkcs7_signed_data_content_info(
-        input_buffer + content_info_off, content_info_size,
+    bool wrapped_in_content_info;
+    size_t signed_data_off = EFI_VARIABLE_AUTHENTICATION_2_SIZE;
+    size_t signed_data_size = auth2.auth_info.hdr.length - WIN_CERTIFICATE_UEFI_GUID_SIZE;
+    if (asn1_parse_pkcs7_signed_data(
+        input_buffer + signed_data_off, signed_data_size,
         &x509, &x509_size,
-        &signature, &signature_size
+        &signature, &signature_size,
+        &wrapped_in_content_info
     ) < 0) goto err_cleanup;
 
     if (file_open(&out_x509, output_x509, FILE_MODE_WRITE) < 0) goto err_cleanup;
@@ -72,13 +74,14 @@ static int parse_auth2_data(
     if (file_open(&out_sig, output_sig, FILE_MODE_WRITE) < 0) goto err_cleanup;
     if (file_write(&out_sig, signature, signature_size) < 0) goto err_cleanup;
 
-    size_t var_data_off = content_info_off + content_info_size;
+    size_t var_data_off = signed_data_off + signed_data_size;
     if (file_open(&out_var, output_var_data, FILE_MODE_WRITE) < 0) goto err_cleanup;
     if (file_write(&out_var, input_buffer + var_data_off, input_size - var_data_off) < 0) goto err_cleanup;
 
+    const char *wrap_arg = wrapped_in_content_info ? "--wrap" : "";
     char timestamp[UTIL_PRINT_TIMESTAMP_BUFFER_SIZE];
     util_print_timestamp(&auth2.timestamp, x_ARRAY_END(timestamp));
-    if (fprintf(stdout, "%s\n", &timestamp[0]) < 0) goto err_cleanup;
+    if (fprintf(stdout, "%s\t%s\n", &timestamp[0], wrap_arg) < 0) goto err_cleanup;
 
     status = 0;
 

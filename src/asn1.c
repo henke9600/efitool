@@ -248,8 +248,8 @@ size_t asn1_authenticode_auth_attrs_write(
     return asn1_size(ctx->payload_size);
 }
 
-size_t asn1_pkcs7_signed_data_content_info_write(
-    struct asn1_pkcs7_signed_data_content_info_ctx *ctx,
+size_t asn1_pkcs7_signed_data_write(
+    struct asn1_pkcs7_signed_data_ctx *ctx,
     const uint_least32_t *content_obj,
     size_t content_obj_len,
     const unsigned char *content, // May be NULL
@@ -264,15 +264,18 @@ size_t asn1_pkcs7_signed_data_content_info_write(
     size_t auth_attrs_payload_size,
     const unsigned char *encrypted_digest,
     size_t encrypted_digest_size,
+    bool wrap_in_content_info,
     unsigned char *out
 ) {
     int_least32_t signed_data_version = 1;
     int_least32_t signer_info_version = 1;
     if (out != NULL) {
         size_t off = 0;
-        off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->payload_size, out + off);
-        off += asn1_object_identifier_write(&asn1_pkcs7_signed_data_obj[0], x_ARRAY_LEN(asn1_pkcs7_signed_data_obj), out + off);
-        off += asn1_write_header(ASN1_CONTEXT_SPECIFIC, 0, true, ctx->content.payload_size, out + off);
+        if (wrap_in_content_info) {
+            off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->payload_size, out + off);
+            off += asn1_object_identifier_write(&asn1_pkcs7_signed_data_obj[0], x_ARRAY_LEN(asn1_pkcs7_signed_data_obj), out + off);
+            off += asn1_write_header(ASN1_CONTEXT_SPECIFIC, 0, true, ctx->content.payload_size, out + off);
+        }
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SEQUENCE, true, ctx->content._0.payload_size, out + off);
         off += asn1_integer_write(signed_data_version, out + off);
         off += asn1_write_header(ASN1_UNIVERSAL, ASN1_SET, true, ctx->content._0.digest_algorithms.payload_size, out + off);
@@ -355,21 +358,24 @@ size_t asn1_pkcs7_signed_data_content_info_write(
         asn1_size(x509_size) +
         asn1_size(ctx->content._0.signer_infos.payload_size)
     );
-    ctx->content.payload_size = asn1_size(ctx->content._0.payload_size);
-    ctx->payload_size = (
-        asn1_object_identifier_write(&asn1_pkcs7_signed_data_obj[0], x_ARRAY_LEN(asn1_pkcs7_signed_data_obj), NULL) +
-        asn1_size(ctx->content.payload_size)
-    );
+    if (wrap_in_content_info) {
+        ctx->content.payload_size = asn1_size(ctx->content._0.payload_size);
+        ctx->payload_size = (
+            asn1_object_identifier_write(&asn1_pkcs7_signed_data_obj[0], x_ARRAY_LEN(asn1_pkcs7_signed_data_obj), NULL) +
+            asn1_size(ctx->content.payload_size)
+        );
+    } else ctx->payload_size = ctx->content._0.payload_size;
     return asn1_size(ctx->payload_size);
 }
 
-int asn1_parse_pkcs7_signed_data_content_info(
+int asn1_parse_pkcs7_signed_data(
     const unsigned char *in,
     size_t in_size,
     const unsigned char **out_x509,
     size_t *out_x509_size,
     const unsigned char **out_encrypted_digest,
-    size_t *out_encrypted_digest_size
+    size_t *out_encrypted_digest_size,
+    bool *out_wrapped_in_content_info
 ) {
     int class;
     int tag;
@@ -382,41 +388,51 @@ int asn1_parse_pkcs7_signed_data_content_info(
     if (header_size == 0 || class != ASN1_UNIVERSAL || tag != ASN1_SEQUENCE || constructed != true) return -1;
     off += header_size;
     size_t outer_payload_end = off + payload_size;
+    bool wrapped;
+    size_t signed_data_end;
 
-    // contentType
+    // contentType if wrapped, version if not
     header_size = asn1_read_header(in, off, outer_payload_end, &class, &tag, &constructed, &payload_size);
-    if (header_size == 0 || class != ASN1_UNIVERSAL || tag != ASN1_OBJECT_IDENTIFIER || constructed != false) return -1;
+    if (header_size == 0 || class != ASN1_UNIVERSAL || constructed != false) return -1;
     off += header_size + payload_size;
+    if (tag == ASN1_OBJECT_IDENTIFIER) {
+        // It was contentType
+        wrapped = true;
 
-    // content
-    header_size = asn1_read_header(in, off, outer_payload_end, &class, &tag, &constructed, &payload_size);
-    if (header_size == 0 || class != ASN1_CONTEXT_SPECIFIC || tag != 0 || constructed != true) return -1;
-    off += header_size;
-    size_t content_payload_end = off + payload_size;
+        // content
+        header_size = asn1_read_header(in, off, outer_payload_end, &class, &tag, &constructed, &payload_size);
+        if (header_size == 0 || class != ASN1_CONTEXT_SPECIFIC || tag != 0 || constructed != true) return -1;
+        off += header_size;
+        size_t content_payload_end = off + payload_size;
 
-    // content 0
-    header_size = asn1_read_header(in, off, content_payload_end, &class, &tag, &constructed, &payload_size);
-    if (header_size == 0 || class != ASN1_UNIVERSAL || tag != ASN1_SEQUENCE || constructed != true) return -1;
-    off += header_size;
-    size_t content_0_payload_end = off + payload_size;
+        // content 0
+        header_size = asn1_read_header(in, off, content_payload_end, &class, &tag, &constructed, &payload_size);
+        if (header_size == 0 || class != ASN1_UNIVERSAL || tag != ASN1_SEQUENCE || constructed != true) return -1;
+        off += header_size;
+        signed_data_end = off + payload_size;
 
-    // version
-    header_size = asn1_read_header(in, off, content_0_payload_end, &class, &tag, &constructed, &payload_size);
-    if (header_size == 0 || class != ASN1_UNIVERSAL || tag != ASN1_INTEGER || constructed != false) return -1;
-    off += header_size + payload_size;
+        // version
+        header_size = asn1_read_header(in, off, signed_data_end, &class, &tag, &constructed, &payload_size);
+        if (header_size == 0 || class != ASN1_UNIVERSAL || tag != ASN1_INTEGER || constructed != false) return -1;
+        off += header_size + payload_size;
+    } else if (tag == ASN1_INTEGER) {
+        // It was version
+        wrapped = false;
+        signed_data_end = outer_payload_end;
+    } else return -1;
 
     // digestAlgorithms
-    header_size = asn1_read_header(in, off, content_0_payload_end, &class, &tag, &constructed, &payload_size);
+    header_size = asn1_read_header(in, off, signed_data_end, &class, &tag, &constructed, &payload_size);
     if (header_size == 0 || class != ASN1_UNIVERSAL || tag != ASN1_SET || constructed != true) return -1;
     off += header_size + payload_size;
 
     // contentInfo
-    header_size = asn1_read_header(in, off, content_0_payload_end, &class, &tag, &constructed, &payload_size);
+    header_size = asn1_read_header(in, off, signed_data_end, &class, &tag, &constructed, &payload_size);
     if (header_size == 0 || class != ASN1_UNIVERSAL || tag != ASN1_SEQUENCE || constructed != true) return -1;
     off += header_size + payload_size;
 
     // certificates
-    header_size = asn1_read_header(in, off, content_0_payload_end, &class, &tag, &constructed, &payload_size);
+    header_size = asn1_read_header(in, off, signed_data_end, &class, &tag, &constructed, &payload_size);
     if (header_size == 0 || class != ASN1_CONTEXT_SPECIFIC || tag != 0 || constructed != true) return -1;
     off += header_size;
     const unsigned char *x509 = in + off;
@@ -424,7 +440,7 @@ int asn1_parse_pkcs7_signed_data_content_info(
     off += payload_size;
 
     // signerInfos (or crls, but don't support that)
-    header_size = asn1_read_header(in, off, content_0_payload_end, &class, &tag, &constructed, &payload_size);
+    header_size = asn1_read_header(in, off, signed_data_end, &class, &tag, &constructed, &payload_size);
     if (header_size == 0 || class != ASN1_UNIVERSAL || tag != ASN1_SET || constructed != true) return -1;
     off += header_size;
     size_t signer_infos_end = off + payload_size;
@@ -465,6 +481,7 @@ int asn1_parse_pkcs7_signed_data_content_info(
     *out_x509_size = x509_size;
     *out_encrypted_digest = in + off;
     *out_encrypted_digest_size = payload_size;
+    *out_wrapped_in_content_info = wrapped;
     return 0;
 }
 

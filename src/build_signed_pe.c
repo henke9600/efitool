@@ -82,8 +82,8 @@ static int build_signed_pe(
 
     if (input_x509_size + serial_number_size + issuer_size > x_SAFE_SIZE - input_signature_size) goto err_cleanup;
 
-    struct asn1_pkcs7_signed_data_content_info_ctx signed_data_ctx;
-    size_t signed_data_size = asn1_pkcs7_signed_data_content_info_write(
+    struct asn1_pkcs7_signed_data_ctx signed_data_ctx;
+    size_t signed_data_size = asn1_pkcs7_signed_data_write(
         &signed_data_ctx,
         &asn1_spc_indirect_data_obj[0], x_ARRAY_LEN(asn1_spc_indirect_data_obj),
         spcidc, spcidc_size,
@@ -92,6 +92,7 @@ static int build_signed_pe(
         serial_number, serial_number_size,
         auth_attrs_payload, auth_attrs_payload_size,
         input_signature_buffer, input_signature_size,
+        true,
         NULL
     );
 
@@ -110,7 +111,7 @@ static int build_signed_pe(
     win_cert.certificate_type = WIN_CERT_TYPE_PKCS_SIGNED_DATA;
 
     win_certificate_write(&win_cert, win_cert_buffer);
-    asn1_pkcs7_signed_data_content_info_write(
+    asn1_pkcs7_signed_data_write(
         &signed_data_ctx,
         &asn1_spc_indirect_data_obj[0], x_ARRAY_LEN(asn1_spc_indirect_data_obj),
         spcidc, spcidc_size,
@@ -119,6 +120,7 @@ static int build_signed_pe(
         serial_number, serial_number_size,
         auth_attrs_payload, auth_attrs_payload_size,
         input_signature_buffer, input_signature_size,
+        true,
         win_cert_buffer + WIN_CERTIFICATE_SIZE
     );
     if (win_cert_padding > 0) {

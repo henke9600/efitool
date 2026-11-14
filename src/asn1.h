@@ -80,7 +80,7 @@ size_t asn1_authenticode_auth_attrs_write(
     unsigned char *out
 );
 
-struct asn1_pkcs7_signed_data_content_info_ctx {
+struct asn1_pkcs7_signed_data_ctx {
     size_t payload_size;
     struct {
         size_t payload_size;
@@ -111,8 +111,8 @@ struct asn1_pkcs7_signed_data_content_info_ctx {
     } content;
 };
 
-size_t asn1_pkcs7_signed_data_content_info_write(
-    struct asn1_pkcs7_signed_data_content_info_ctx *ctx,
+size_t asn1_pkcs7_signed_data_write(
+    struct asn1_pkcs7_signed_data_ctx *ctx,
     const uint_least32_t *content_obj,
     size_t content_obj_len,
     const unsigned char *content, // May be NULL
@@ -127,16 +127,18 @@ size_t asn1_pkcs7_signed_data_content_info_write(
     size_t auth_attrs_payload_size,
     const unsigned char *encrypted_digest,
     size_t encrypted_digest_size,
+    bool wrap_in_content_info,
     unsigned char *out
 );
 
-int asn1_parse_pkcs7_signed_data_content_info(
+int asn1_parse_pkcs7_signed_data(
     const unsigned char *in,
     size_t in_size,
     const unsigned char **out_x509,
     size_t *out_x509_size,
     const unsigned char **out_encrypted_digest,
-    size_t *out_encrypted_digest_size
+    size_t *out_encrypted_digest_size,
+    bool *out_wrapped_in_content_info
 );
 
 int asn1_parse_x509(

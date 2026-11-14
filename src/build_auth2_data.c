@@ -17,6 +17,7 @@ static int build_auth2_data(
     const char *input_var_data,
     const char *input_signature,
     const char *input_x509,
+    bool wrap_in_content_info,
     const char *output_auth2_data
 ) {
     int status = -1;
@@ -48,8 +49,8 @@ static int build_auth2_data(
 
     if (input_x509_size + serial_number_size + issuer_size > x_SAFE_SIZE - input_signature_size) goto err_cleanup;
 
-    struct asn1_pkcs7_signed_data_content_info_ctx signed_data_ctx;
-    size_t signed_data_size = asn1_pkcs7_signed_data_content_info_write(
+    struct asn1_pkcs7_signed_data_ctx signed_data_ctx;
+    size_t signed_data_size = asn1_pkcs7_signed_data_write(
         &signed_data_ctx,
         &asn1_pkcs7_data_obj[0], x_ARRAY_LEN(asn1_pkcs7_data_obj),
         NULL, 0,
@@ -58,6 +59,7 @@ static int build_auth2_data(
         serial_number, serial_number_size,
         NULL, 0,
         input_signature_buffer, input_signature_size,
+        wrap_in_content_info,
         NULL
     );
 
@@ -79,7 +81,7 @@ static int build_auth2_data(
     signed_data = malloc(signed_data_size);
     if (signed_data == NULL) goto err_cleanup;
 
-    asn1_pkcs7_signed_data_content_info_write(
+    asn1_pkcs7_signed_data_write(
         &signed_data_ctx,
         &asn1_pkcs7_data_obj[0], x_ARRAY_LEN(asn1_pkcs7_data_obj),
         NULL, 0,
@@ -88,6 +90,7 @@ static int build_auth2_data(
         serial_number, serial_number_size,
         NULL, 0,
         input_signature_buffer, input_signature_size,
+        wrap_in_content_info,
         signed_data
     );
     if (file_write(&out, signed_data, signed_data_size) < 0) goto err_cleanup;
@@ -113,6 +116,7 @@ static int build_auth2_data_usage(FILE *file, const char *parent, const char *co
         "\n"
         "Options:\n"
         "  -h, --help                 Show this help text\n"
+        "  -w, --wrap                 Wrap the pkcs7 signed data in a content info structure\n"
         "  -o, --output FILE          Output file. Defaults to stdout\n"
         "  -t, --timestamp TIMESTAMP  Set authentication timestamp " TIMESTAMP_INFO TIMESTAMP_DEFAULT "\"\n",
         parent,
@@ -123,16 +127,22 @@ static int build_auth2_data_usage(FILE *file, const char *parent, const char *co
 
 int build_auth2_data_main(const char *parent, const char *const *argv) {
     bool help = false;
+    bool wrap_in_content_info = false;
     const char *output_file = "-";
     struct efi_time timestamp;
     util_parse_timestamp(&timestamp, TIMESTAMP_DEFAULT);
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)      { argparse_arg = "h"; break; }
+        if (strcmp(argparse_long_opt, "wrap") == 0)      { argparse_arg = "w"; break; }
         if (strcmp(argparse_long_opt, "output") == 0)    { argparse_arg = "o"; break; }
         if (strcmp(argparse_long_opt, "timestamp") == 0) { argparse_arg = "t"; break; }
     ARGPARSE_LONG_OPTS_TO_FLAGS_DELIMITER
         case 'h': {
             help = true;
+            break;
+        }
+        case 'w': {
+            wrap_in_content_info = true;
             break;
         }
     ARGPARSE_FLAGS_TO_ARGS_DELIMITER
@@ -182,6 +192,7 @@ int build_auth2_data_main(const char *parent, const char *const *argv) {
         variable_data,
         signature,
         certificate,
+        wrap_in_content_info,
         output_file
     );
 

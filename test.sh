@@ -316,7 +316,7 @@ pk_auth="$build_dir/PK.auth"
 pk_sig="$build_dir/PK.sig"
 echo_eval "$EFITOOL prepare-auth2-signing -o \"$tmp_dir/PK.tosign\" $sb_attrs PK $global_variable_guid \"$pk\""
 echo_eval "$OPENSSL dgst -sha256 -keyform der -sign \"$pk_key\" -out \"$pk_sig\" \"$tmp_dir/PK.tosign\""
-echo_eval "$EFITOOL build-auth2-data -o \"$pk_auth\" \"$pk_cert\" \"$pk_sig\" \"$pk\""
+echo_eval "$EFITOOL build-auth2-data --wrap -o \"$pk_auth\" \"$pk_cert\" \"$pk_sig\" \"$pk\""
 
 kek_auth="$build_dir/KEK.auth"
 kek_sig="$build_dir/KEK.sig"
@@ -452,7 +452,7 @@ echo_eval "\
 $EFITOOL parse-auth2-data -o \"$parse_pk\" -c \"$tmp_pk_auth_cert\" -s \"$parse_pk_sig\" \
 \"$parse_pk_auth\" >\"$stdout\"\
 "
-echo_eval "printf '1970-01-01 00:00:00\n' | cmp \"$stdout\" -"
+echo_eval "printf '1970-01-01 00:00:00\t--wrap\n' | cmp \"$stdout\" -"
 echo_eval "cmp \"$tmp_pk_auth_cert\" \"$pk_cert\""
 
 parse_kek="$parse_dir/${kek##*/}"
@@ -462,7 +462,7 @@ echo_eval "\
 $EFITOOL parse-auth2-data -o \"$parse_kek\" -c \"$tmp_kek_auth_cert\" -s \"$parse_kek_sig\" \
 \"$parse_kek_auth\" >\"$stdout\"\
 "
-echo_eval "printf '$auth_timestamp\n' | cmp \"$stdout\" -"
+echo_eval "printf '$auth_timestamp\t\n' | cmp \"$stdout\" -"
 echo_eval "cmp \"$tmp_kek_auth_cert\" \"$pk_cert\""
 
 parse_db="$parse_dir/${db##*/}"
@@ -472,7 +472,7 @@ echo_eval "\
 $EFITOOL parse-auth2-data -o \"$parse_db\" -c \"$tmp_db_auth_cert\" -s \"$parse_db_sig\" \
 \"$parse_db_auth\" >\"$stdout\"\
 "
-echo_eval "printf '$auth_timestamp\n' | cmp \"$stdout\" -"
+echo_eval "printf '$auth_timestamp\t\n' | cmp \"$stdout\" -"
 echo_eval "cmp \"$tmp_db_auth_cert\" \"$kek_cert\""
 
 parse_db_update="$parse_dir/${db_update##*/}"
@@ -482,7 +482,7 @@ echo_eval "\
 $EFITOOL parse-auth2-data -o \"$parse_db_update\" -c \"$tmp_db_update_auth_cert\" -s \"$parse_db_update_sig\" \
 \"$parse_db_update_auth\" >\"$stdout\"\
 "
-echo_eval "printf '$auth_update_timestamp\n' | cmp \"$stdout\" -"
+echo_eval "printf '$auth_update_timestamp\t\n' | cmp \"$stdout\" -"
 echo_eval "cmp \"$tmp_db_update_auth_cert\" \"$kek_cert\""
 
 # Parse signature databases
