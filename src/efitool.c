@@ -142,5 +142,6 @@ static int efitool_main(int argc, const char *const *argv) {
 int main(int argc, char **argv) {
     if (argc < 1) return EXIT_FAILURE;
     if (efitool_main(argc, (const char *const *)argv) < 0) return EXIT_FAILURE;
+    if (fflush(stdout) == EOF) return EXIT_FAILURE;
     return EXIT_SUCCESS;
 }
