@@ -125,17 +125,14 @@ int parse_auth2_data_main(const char *parent, const char *const *argv) {
         }
     ARGPARSE_FLAGS_TO_ARGS_DELIMITER
         case 'o': {
-            if (strcmp(argparse_arg, "-") == 0) goto argparse_done;
             output_file = argparse_arg;
             break;
         }
         case 'c': {
-            if (strcmp(argparse_arg, "-") == 0) goto argparse_done;
             output_file_cert = argparse_arg;
             break;
         }
         case 's': {
-            if (strcmp(argparse_arg, "-") == 0) goto argparse_done;
             output_file_sig = argparse_arg;
             break;
         }

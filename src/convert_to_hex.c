@@ -1,6 +1,5 @@
 #include "convert_to_hex.h"
 #include "argparse.h"
-#include "file.h"
 #include "util.h"
 
 #include <stdlib.h>
@@ -13,8 +12,7 @@ static int convert_to_hex(bool lowercase, bool no_newline, const char *input, co
     int status = -1;
     unsigned char *input_buffer = NULL;
     char *hex_buffer = NULL;
-    struct file out;
-    file_init(&out);
+    FILE *out = NULL;
 
     size_t input_size;
     if (util_read_full(input, &input_buffer, &input_size) < 0) goto err_cleanup;
@@ -24,7 +22,10 @@ static int convert_to_hex(bool lowercase, bool no_newline, const char *input, co
     hex_buffer = malloc(hex_buffer_len + 1);
     if (hex_buffer == NULL) goto err_cleanup;
 
-    if (file_open(&out, output_hex, FILE_MODE_WRITE | FILE_MODE_TEXT) < 0) goto err_cleanup;
+    if (output_hex != NULL) {
+        out = util_fopen(output_hex, "w");
+        if (out == NULL) goto err_cleanup;
+    } else out = stdout;
 
     const char *hex_table = lowercase ? "0123456789abcdef" : "0123456789ABCDEF";
     for (size_t i = 0; i < input_size; ++i) {
@@ -37,14 +38,16 @@ static int convert_to_hex(bool lowercase, bool no_newline, const char *input, co
     if (!no_newline) hex_buffer[hex_buffer_len - 1] = '\n';
     hex_buffer[hex_buffer_len] = '\0';
 
-    if (file_puts(&out, hex_buffer) < 0) goto err_cleanup;
+    if (fputs(hex_buffer, out) == EOF) goto err_cleanup;
 
     status = 0;
 
     err_cleanup:
     free(input_buffer);
     free(hex_buffer);
-    if (file_close(&out) < 0) status = -1;
+    if (output_hex != NULL && out != NULL) {
+        if (fclose(out) < 0) status = -1;
+    }
     return status;
 }
 
@@ -65,7 +68,7 @@ static int convert_to_hex_usage(FILE *file, const char *parent, const char *cons
 
 int convert_to_hex_main(const char *parent, const char *const *argv) {
     bool help = false;
-    const char *output_file = "-";
+    const char *output_file = NULL;
     bool no_newline = false;
     bool lowercase = false;
     ARGPARSE_BEGIN(argv)

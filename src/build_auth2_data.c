@@ -117,7 +117,7 @@ static int build_auth2_data_usage(FILE *file, const char *parent, const char *co
         "Options:\n"
         "  -h, --help                 Show this help text\n"
         "  -w, --wrap                 Wrap the pkcs7 signed data in a content info structure\n"
-        "  -o, --output FILE          Output file. Defaults to stdout\n"
+        "  -o, --output FILE          Output file\n"
         "  -t, --timestamp TIMESTAMP  Set authentication timestamp " TIMESTAMP_INFO TIMESTAMP_DEFAULT "\"\n",
         parent,
         argv[0]
@@ -128,7 +128,7 @@ static int build_auth2_data_usage(FILE *file, const char *parent, const char *co
 int build_auth2_data_main(const char *parent, const char *const *argv) {
     bool help = false;
     bool wrap_in_content_info = false;
-    const char *output_file = "-";
+    const char *output_file = NULL;
     struct efi_time timestamp;
     util_parse_timestamp(&timestamp, TIMESTAMP_DEFAULT);
     ARGPARSE_BEGIN(argv)

@@ -60,11 +60,11 @@ static int convert_from_hex(const char *input_hex, const char *output) {
 static int convert_from_hex_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
-        "Usage: %s %s [OPTION]... HEX_DATA\n"
+        "Usage: %s %s [OPTION]... [HEX_FILE]\n"
         "\n"
         "Options:\n"
         "  -h, --help         Show this help text\n"
-        "  -o, --output FILE  Output file. Defaults to stdout\n",
+        "  -o, --output FILE  Output file\n",
         parent,
         argv[0]
     );
@@ -72,7 +72,7 @@ static int convert_from_hex_usage(FILE *file, const char *parent, const char *co
 
 int convert_from_hex_main(const char *parent, const char *const *argv) {
     bool help = false;
-    const char *output_file = "-";
+    const char *output_file = NULL;
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)   { argparse_arg = "h"; break; }
         if (strcmp(argparse_long_opt, "output") == 0) { argparse_arg = "o"; break; }
@@ -96,18 +96,15 @@ int convert_from_hex_main(const char *parent, const char *const *argv) {
 
     if (help) return convert_from_hex_usage(stdout, parent, argv);
 
-    const char *hex_data = argv[argparse_pos++];
-    if (hex_data == NULL) {
-        (void)fprintf(stderr, "ERROR: Missing HEX_DATA\n\n");
-        goto err_usage;
+    const char *hex_file = argv[argparse_pos++];
+    if (hex_file != NULL) {
+        if (argv[argparse_pos] != NULL) {
+            (void)fprintf(stderr, "ERROR: Too many arguments\n\n");
+            goto err_usage;
+        }
     }
 
-    if (argv[argparse_pos] != NULL) {
-        (void)fprintf(stderr, "ERROR: Too many arguments\n\n");
-        goto err_usage;
-    }
-
-    return convert_from_hex(hex_data, output_file);
+    return convert_from_hex(hex_file, output_file);
 
     err_usage:
     convert_from_hex_usage(stderr, parent, argv);

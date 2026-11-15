@@ -3,6 +3,7 @@
 #include "file.h"
 #include "x.h"
 
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -226,6 +227,28 @@ void util_print_timestamp(const struct efi_time *timestamp, char *buffer_end) {
     for (int i = 0; i < 4; ++i) { *--pos = (char)('0' + n % 10); n /= 10; }
 }
 
+FILE *util_fopen(const char *file, const char *mode) {
+    errno = 0; // fopen is not guaranteed to set errno
+    FILE *res = fopen(file, mode);
+    if (res == NULL) {
+        const char *error = "Unknown error";
+        if (errno != 0) error = strerror(errno);
+        (void)fprintf(stderr, "ERROR: Failed to open '%s': %s\n", file, error);
+    }
+    return res;
+}
+
+int util_fgets(FILE *handle, char *buffer, int num_to_read) {
+    const char *res = fgets(buffer, num_to_read, handle);
+    if (ferror(handle) != 0) return -1;
+    if (feof(handle) != 0) {
+        if (res == NULL) buffer[0] = '\0'; // Make sure a valid string is always written on success
+        return 0;
+    }
+    if (res == NULL) return -1;
+    return 1;
+}
+
 #define READ_SIZE 4096
 int util_read_full(const char *file, unsigned char **out_buffer, size_t *out_size) {
     struct file in;
@@ -262,11 +285,13 @@ int util_read_full(const char *file, unsigned char **out_buffer, size_t *out_siz
 
 #define READ_SIZE 4096
 int util_read_full_string(const char *file, char **out_string, size_t *out_len) {
-    struct file in;
-    file_init(&in);
+    FILE *in = NULL;
     char *string = NULL;
 
-    if (file_open(&in, file, FILE_MODE_TEXT) < 0) goto err_cleanup;
+    if (file != NULL) {
+        in = util_fopen(file, "r");
+        if (in == NULL) goto err_cleanup;
+    } else in = stdin;
 
     size_t len = 0;
     for (;;) {
@@ -274,21 +299,21 @@ int util_read_full_string(const char *file, char **out_string, size_t *out_len) 
         if (new_string == NULL) goto err_cleanup;
         string = new_string;
 
-        int gets_status = file_gets(&in, string + len, READ_SIZE);
+        int gets_status = util_fgets(in, string + len, READ_SIZE);
         if (gets_status < 0) goto err_cleanup;
         size_t num_read = strlen(string + len);
         len += num_read;
         if (len + 1 > x_SAFE_SIZE) goto err_cleanup;
         if (gets_status == 0) break;
     }
-    (void)file_close(&in);
+    if (file != NULL && in != NULL) (void)fclose(in);
 
     *out_string = string;
     *out_len = len;
     return 0;
 
     err_cleanup:
-    (void)file_close(&in);
+    if (file != NULL && in != NULL) (void)fclose(in);
     free(string);
     return -1;
 }

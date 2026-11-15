@@ -69,7 +69,6 @@ int parse_signature_data_main(const char *parent, const char *const *argv) {
         }
     ARGPARSE_FLAGS_TO_ARGS_DELIMITER
         case 'o': {
-            if (strcmp(argparse_arg, "-") == 0) goto argparse_done;
             output_file = argparse_arg;
             break;
         }

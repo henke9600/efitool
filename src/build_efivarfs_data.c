@@ -48,7 +48,7 @@ static int build_efivarfs_data_usage(FILE *file, const char *parent, const char 
         "\n"
         "Options:\n"
         "  -h, --help                    Show this help text\n"
-        "  -o, --output FILE             Output file. Defaults to stdout\n"
+        "  -o, --output FILE             Output file\n"
         "  -n, --non-volatile            Set the non-volatile attribute\n"
         "  -b, --bootservice-access      Set the bootservice access attribute\n"
         "  -r, --runtime-access          Set the runtime access attribute\n"
@@ -61,7 +61,7 @@ static int build_efivarfs_data_usage(FILE *file, const char *parent, const char 
 
 int build_efivarfs_data_main(const char *parent, const char *const *argv) {
     bool help = false;
-    const char *output_file = "-";
+    const char *output_file = NULL;
     uint_least32_t attributes = 0;
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)                   { argparse_arg = "h"; break; }

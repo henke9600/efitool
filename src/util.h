@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 int util_to_printable_ascii(char c);
 char util_from_printable_ascii(unsigned char ascii);
@@ -17,6 +18,8 @@ void util_print_guid(const struct efi_guid *guid, char *buffer);
 int util_parse_timestamp(struct efi_time *timestamp, const char *buffer);
 #define UTIL_PRINT_TIMESTAMP_BUFFER_SIZE x_ARRAY_LEN("1970-01-01 00:00:00")
 void util_print_timestamp(const struct efi_time *timestamp, char *buffer_end);
+FILE *util_fopen(const char *file, const char *mode);
+int util_fgets(FILE *handle, char *buffer, int num_to_read);
 int util_read_full(const char *file, unsigned char **out_buffer, size_t *out_size);
 int util_read_full_string(const char *file, char **out_string, size_t *out_len);
 int util_concatenate(const char *const *input_files, const char *output_file);

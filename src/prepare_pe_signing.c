@@ -55,7 +55,7 @@ static int prepare_pe_signing_usage(FILE *file, const char *parent, const char *
         "\n"
         "Options:\n"
         "  -h, --help         Show this help text\n"
-        "  -o, --output FILE  Output file. Defaults to stdout\n",
+        "  -o, --output FILE  Output file\n",
         parent,
         argv[0]
     );
@@ -63,7 +63,7 @@ static int prepare_pe_signing_usage(FILE *file, const char *parent, const char *
 
 int prepare_pe_signing_main(const char *parent, const char *const *argv) {
     bool help = false;
-    const char *output_file = "-";
+    const char *output_file = NULL;
     ARGPARSE_BEGIN(argv)
         if (strcmp(argparse_long_opt, "help") == 0)   { argparse_arg = "h"; break; }
         if (strcmp(argparse_long_opt, "output") == 0) { argparse_arg = "o"; break; }

@@ -64,7 +64,7 @@ static int prepare_auth2_signing_usage(FILE *file, const char *parent, const cha
         "\n"
         "Options:\n"
         "  -h, --help                 Show this help text\n"
-        "  -o, --output FILE          Output file. Defaults to stdout\n"
+        "  -o, --output FILE          Output file\n"
         "  -n, --non-volatile         Set the non-volatile attribute\n"
         "  -b, --bootservice-access   Set the bootservice access attribute\n"
         "  -r, --runtime-access       Set the runtime access attribute\n"
@@ -78,7 +78,7 @@ static int prepare_auth2_signing_usage(FILE *file, const char *parent, const cha
 
 int prepare_auth2_signing_main(const char *parent, const char *const *argv) {
     bool help = false;
-    const char *output_file = "-";
+    const char *output_file = NULL;
     uint_least32_t attributes = EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS;
     struct efi_time timestamp;
     util_parse_timestamp(&timestamp, TIMESTAMP_DEFAULT);
