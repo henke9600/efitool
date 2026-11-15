@@ -54,7 +54,7 @@ static int convert_to_hex(bool lowercase, bool no_newline, const char *input, co
 static int convert_to_hex_usage(FILE *file, const char *parent, const char *const *argv) {
     return fprintf(
         file,
-        "Usage: %s %s [OPTION]... DATA\n"
+        "Usage: %s %s [OPTION]... FILE\n"
         "\n"
         "Options:\n"
         "  -h, --help         Show this help text\n"
@@ -104,9 +104,9 @@ int convert_to_hex_main(const char *parent, const char *const *argv) {
 
     if (help) return convert_to_hex_usage(stdout, parent, argv);
 
-    const char *data = argv[argparse_pos++];
-    if (data == NULL) {
-        (void)fprintf(stderr, "ERROR: Missing DATA\n\n");
+    const char *file = argv[argparse_pos++];
+    if (file == NULL) {
+        (void)fprintf(stderr, "ERROR: Missing FILE\n\n");
         goto err_usage;
     }
 
@@ -115,7 +115,7 @@ int convert_to_hex_main(const char *parent, const char *const *argv) {
         goto err_usage;
     }
 
-    return convert_to_hex(lowercase, no_newline, data, output_file);
+    return convert_to_hex(lowercase, no_newline, file, output_file);
 
     err_usage:
     convert_to_hex_usage(stderr, parent, argv);
