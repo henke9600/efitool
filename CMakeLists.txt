@@ -45,6 +45,7 @@ if(BUILD_TESTING)
     endfunction()
 
     add_unit_test(argparse)
+    add_unit_test(crc32)
     add_unit_test(sha256)
     add_unit_test(x)
 endif()
